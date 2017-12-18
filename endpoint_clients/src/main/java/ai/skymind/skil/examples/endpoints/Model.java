@@ -1,7 +1,11 @@
 package ai.skymind.skil.examples.endpoints;
 
-import ai.skymind.skil.examples.request_objects.ModelDetails;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.text.MessageFormat;
 
 public class Model {
 
@@ -21,7 +25,86 @@ public class Model {
         this.deploymentID = deploymentID;
     }
 
-    public JSONObject addModel(ModelDetails modelDetails) {
-        return null;
+    public JSONObject addModel(String name, String fileLocation, int scale, String uri) {
+        JSONObject model = new JSONObject();
+
+        try {
+            model =
+                    Unirest.post(MessageFormat.format("http://{0}:{1}/deployment/{2}/model", host, port, deploymentID))
+                            .header("accept", "application/json")
+                            .header("Content-Type", "application/json")
+                            .body(new JSONObject()
+                                    .put("name", name)
+                                    .put("modelType", "model")
+                                    .put("fileLocation", fileLocation)
+                                    .put("scale", scale)
+                                    .put("uri", new JSONArray().put(uri).toString())
+                                    .toString())
+                            .asJson()
+                            .getBody().getObject();
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+
+        return model;
+    }
+
+    public JSONObject reimportModel(int modelID, String name, String fileLocation) {
+        JSONObject model = new JSONObject();
+
+        try {
+            model =
+                    Unirest.post(MessageFormat.format("http://{0}:{1}/deployment/{2}/model/{3}", host, port, deploymentID, modelID))
+                            .header("accept", "application/json")
+                            .header("Content-Type", "application/json")
+                            .body(new JSONObject()
+                                    .put("name", name)
+                                    .put("modelType", "model")
+                                    .put("fileLocation", fileLocation)
+                                    .toString())
+                            .asJson()
+                            .getBody().getObject();
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+
+        return model;
+    }
+
+    public JSONObject deleteModel(int modelID) {
+        JSONObject model = new JSONObject();
+
+        try {
+            model =
+                    Unirest.delete(MessageFormat.format("http://{0}:{1}/deployment/{2}/model/{3}", host, port, deploymentID, modelID))
+                            .header("accept", "application/json")
+                            .header("Content-Type", "application/json")
+                            .asJson()
+                            .getBody().getObject();
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+
+        return model;
+    }
+
+    public JSONObject setModelState(int modelID, String state) {
+        JSONObject model = new JSONObject();
+
+        try {
+            model =
+                    Unirest.delete(MessageFormat.format("http://{0}:{1}/deployment/{2}/model/{3}/state", host, port, deploymentID, modelID))
+                            .header("accept", "application/json")
+                            .header("Content-Type", "application/json")
+                            .body(new JSONObject()
+                                    .put("name", state)
+                                    .toString())
+                            .asJson()
+                            .getBody().getObject();
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+
+        return model;
     }
 }

@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class KNN {
 
@@ -29,6 +31,9 @@ public class KNN {
         JSONObject knn = new JSONObject();
 
         try {
+            List<String> uriList = new ArrayList<String>();
+            uriList.add(uri);
+
             knn =
                     Unirest.post(MessageFormat.format("http://{0}:{1}/deployment/{2}/model", host, port, deploymentID))
                             .header("accept", "application/json")
@@ -38,7 +43,7 @@ public class KNN {
                                     .put("modelType", "knn")
                                     .put("fileLocation", fileLocation)
                                     .put("scale", scale)
-                                    .put("uri", new JSONArray().put(uri).toString())
+                                    .put("uri", uriList)
                                     .toString())
                             .asJson()
                             .getBody().getObject();

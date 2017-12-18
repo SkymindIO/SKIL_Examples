@@ -9,12 +9,12 @@ import java.text.MessageFormat;
 public class Main {
     public static void main(String[] args) {
         //Set these variables to the file locations in the server before running this example.
-        String modelFileLocation = null,
-                reimportedModelFileLocation = null;
-        String transformFileLocation = null,
-                reimportedTransformFileLocation = null;
-        String knnFileLocation = null,
-                reimportedKnnFileLocation = null;
+        String modelFileLocation = "file:///tmp/model.zip",
+                reimportedModelFileLocation = "file:///tmp/reimported_model.zip";
+        String transformFileLocation = "file:///tmp/transform.json",
+                reimportedTransformFileLocation = "file:///tmp/reimported_transform.json";
+        String knnFileLocation = "file:///tmp/knn.bin",
+                reimportedKnnFileLocation = "file:///tmp/reimported_knn.bin";
 
         /*---------------------------------------------------------------------------------*/
         /*--------------------------------AUTH ENDPOINTS-----------------------------------*/

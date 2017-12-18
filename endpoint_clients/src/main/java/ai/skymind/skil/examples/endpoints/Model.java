@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Model {
 
@@ -29,6 +31,9 @@ public class Model {
         JSONObject model = new JSONObject();
 
         try {
+            List<String> uriList = new ArrayList<String>();
+            uriList.add(uri);
+
             model =
                     Unirest.post(MessageFormat.format("http://{0}:{1}/deployment/{2}/model", host, port, deploymentID))
                             .header("accept", "application/json")
@@ -38,7 +43,7 @@ public class Model {
                                     .put("modelType", "model")
                                     .put("fileLocation", fileLocation)
                                     .put("scale", scale)
-                                    .put("uri", new JSONArray().put(uri).toString())
+                                    .put("uri", uriList)
                                     .toString())
                             .asJson()
                             .getBody().getObject();

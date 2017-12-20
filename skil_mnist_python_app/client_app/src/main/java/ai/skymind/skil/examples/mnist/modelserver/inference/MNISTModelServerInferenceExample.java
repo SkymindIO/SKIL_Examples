@@ -69,6 +69,7 @@ public class MNISTModelServerInferenceExample {
 
 //    @Parameter(names="--transform", description="Endpoint for Transform", required=true)
     private String skilInferenceEndpoint = "http://localhost:9008/endpoints/jp_tf_deployment/model/mnistjp5epoch/default/";
+    //private String skilInferenceEndpoint = "http://localhost:9601/";
 
 
 //    @Parameter(names="--inference", description="Endpoint for Inference", required=true)
@@ -150,10 +151,9 @@ public class MNISTModelServerInferenceExample {
 
         INDArray finalRecord = imgTransformProcess.executeArray( img );
 
-        Base64NDArrayBody imgBase64 = new Base64NDArrayBody(Nd4jBase64.base64String( finalRecord ) );
+        String imgBase64 = Nd4jBase64.base64String(finalRecord);
 
         System.out.println( imgBase64 );  
-
 
         System.out.println( "Finished image conversion" );
 
@@ -166,7 +166,7 @@ public class MNISTModelServerInferenceExample {
 
     }
 
-    private void skilClientGetImageInference( Base64NDArrayBody imgBase64 ) {
+    private void skilClientGetImageInference( String imgBase64 ) {
 
             Authorization auth = new Authorization();
             String auth_token = auth.getAuthToken( "admin", "admin" );
@@ -182,8 +182,7 @@ public class MNISTModelServerInferenceExample {
                             .header( "Authorization", "Bearer " + auth_token)
                             .body(new JSONObject() //Using this because the field functions couldn't get translated to an acceptable json
                                     .put( "id", "some_id" )
-                                    .put("ndarray", imgBase64.getNdarray() )
-                                    
+                                    .put("prediction", new JSONObject().put("array", imgBase64))
                                     .toString())
                             .asJson()
                             .getBody().getObject().toString(); //.getString("token");

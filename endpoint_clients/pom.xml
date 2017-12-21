@@ -8,14 +8,22 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
     <properties>
+        <skil.version>1.0.0</skil.version>
         <java.version>1.8</java.version>
         <junit.version>4.12</junit.version>
         <nd4j.artifact>nd4j-native</nd4j.artifact>
         <nd4j.version>0.9.1</nd4j.version>
-        <main.class>ai.skymind.skil.examples.Main</main.class>
+        <main.class>ai.skymind.skil.examples.endpoints.Main</main.class>
     </properties>
 
     <dependencies>
+        <!-- SKIL Dependencies -->
+        <dependency>
+            <groupId>io.skymind</groupId>
+            <artifactId>skil-daemon-client</artifactId>
+            <version>${skil.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>

@@ -1,4 +1,4 @@
-package ai.skymind.skil.examples.skil_client;
+package ai.skymind.skil.examples.skil_deployment_client;
 
 import io.skymind.auth.rest.LoginResponse;
 import io.skymind.deployment.client.SKILDeploymentClient;

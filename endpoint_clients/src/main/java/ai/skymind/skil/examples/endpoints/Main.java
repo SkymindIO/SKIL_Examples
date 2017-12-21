@@ -1,4 +1,4 @@
-package ai.skymind.skil.examples;
+package ai.skymind.skil.examples.endpoints;
 
 import ai.skymind.skil.examples.endpoints.*;
 import org.json.JSONArray;

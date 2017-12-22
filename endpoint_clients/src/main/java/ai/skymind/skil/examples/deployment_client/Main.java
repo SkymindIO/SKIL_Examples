@@ -65,7 +65,7 @@ public class Main {
 
         // Adding a new model to a deployment
         String newModelName = "New-Model";
-        String singleEndpointUrl = "new_model_endpoint";
+        String singleModelEndpointUrl = "new_model_endpoint";
         ModelEntity addedModelEntity = null;
         try {
             addedModelEntity = skilDeploymentClient.addModel(deploymentId,
@@ -73,7 +73,7 @@ public class Main {
                             .name(newModelName)
                             .fileLocation(modelFileLocation)
                             .scale(1)
-                            .uri(singleEndpointUrl)
+                            .uri(singleModelEndpointUrl)
                             .build());
         } catch (ClientException e) {
             e.printStackTrace();
@@ -108,9 +108,9 @@ public class Main {
         }
 
         // Deleting the added model
-        String deletedModelDetails = null;
+        String deletedModelResponse = null;
         if (addedModelEntity != null) {
-            deletedModelDetails = skilDeploymentClient.deleteModel(
+            deletedModelResponse = skilDeploymentClient.deleteModel(
                     deploymentId,
                     (Long) addedModelEntity.getId()
             );
@@ -120,6 +120,56 @@ public class Main {
         /*--------------------------------TRANSFORM ENDPOINTS------------------------------*/
         /*---------------------------------------------------------------------------------*/
 
+        // Adding a new transform to a deployment
+        String newTransformName = "New-Transform";
+        String singleTransformEndpointUrl = "new_transform_endpoint";
+        ModelEntity addedTransformEntity = null;
+        try {
+            addedTransformEntity = skilDeploymentClient.addModel(deploymentId,
+                    ImportModelRequest.builder()
+                            .name(newTransformName)
+                            .fileLocation(transformFileLocation)
+                            .scale(1)
+                            .subType(ModelEntity.ModelType.TRANSFORM.name())
+                            .uri(singleTransformEndpointUrl)
+                            .build());
+        } catch (ClientException e) {
+            e.printStackTrace();
+        }
+
+        // Reimporting a transform to a model ID in a deployment
+        String reimportedTransformName = "Reimported-Transform";
+        ModelEntity reimportedTransformEntity = null;
+        if (addedTransformEntity != null) {
+            reimportedTransformEntity = skilDeploymentClient.reimportModel(
+                    deploymentId,
+                    (Long) addedTransformEntity.getId(),
+                    ImportModelRequest.builder()
+                            .name(reimportedTransformName)
+                            .fileLocation(reimportedTransformFileLocation)
+                            .build());
+        }
+
+        // Setting transform state
+        ModelEntity stateChangedTransform = null;
+        if (addedTransformEntity != null) {
+            stateChangedTransform = skilDeploymentClient.setModelState(
+                    deploymentId,
+                    (Long) addedTransformEntity.getId(),
+                    UpdateModelStateRequest.builder()
+                            .state(ModelEntity.SetState.STOP)
+                            .build()
+            );
+        }
+
+        // Deleting the added transform
+        String deletedTransformResponse = null;
+        if (addedTransformEntity != null) {
+            deletedTransformResponse = skilDeploymentClient.deleteModel(
+                    deploymentId,
+                    (Long) addedTransformEntity.getId()
+            );
+        }
 
         /*---------------------------------------------------------------------------------*/
         /*------------------------------------KNN ENDPOINTS--------------------------------*/
@@ -196,7 +246,7 @@ public class Main {
                     stateChangedModel.getFileLocation()));
 
             print("\n\n----------------------------Deleting a model--------------------------------");
-            print("Response: " + deletedModelDetails);
+            print("Response: " + deletedModelResponse);
         }
 
         print("\n\n----------------------------Listing all Models----------------------------------");
@@ -206,6 +256,37 @@ public class Main {
         print("------------------------------Transforms------------------------------------");
         print("----------------------------------------------------------------------------");
 
+        if(addedTransformEntity != null) {
+            print("\n\n----------------------------Adding a transform----------------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    addedTransformEntity.getId(),
+                    addedTransformEntity.getName(),
+                    addedTransformEntity.getScale(),
+                    addedTransformEntity.getState(),
+                    addedTransformEntity.getFileLocation()));
+
+            print("\n\n----------------------------Reimporting a transform-----------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    reimportedTransformEntity.getId(),
+                    reimportedTransformEntity.getName(),
+                    reimportedTransformEntity.getScale(),
+                    reimportedTransformEntity.getState(),
+                    reimportedTransformEntity.getFileLocation()));
+
+            print("\n\n----------------------------Changing transform state----------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    stateChangedTransform.getId(),
+                    stateChangedTransform.getName(),
+                    stateChangedTransform.getScale(),
+                    stateChangedTransform.getState(),
+                    stateChangedTransform.getFileLocation()));
+
+            print("\n\n----------------------------Deleting a transform--------------------------------");
+            print("Response: " + deletedTransformResponse);
+        }
 
         print("----------------------------------------------------------------------------");
         print("------------------------------KNNs------------------------------------------");

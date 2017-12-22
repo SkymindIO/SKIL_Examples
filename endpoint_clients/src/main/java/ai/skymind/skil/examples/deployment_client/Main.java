@@ -1,6 +1,5 @@
 package ai.skymind.skil.examples.deployment_client;
 
-import ai.skymind.skil.examples.endpoints.Model;
 import io.skymind.auth.rest.LoginResponse;
 import io.skymind.deployment.client.SKILDeploymentClient;
 import io.skymind.deployment.model.ModelEntity;
@@ -11,7 +10,6 @@ import io.skymind.deployment.rest.UpdateModelStateRequest;
 import io.skymind.skil.client.errors.ClientException;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -62,7 +60,7 @@ public class Main {
         DeploymentResponse deployment = skilDeploymentClient.getDeployment(deploymentId);
 
         /*---------------------------------------------------------------------------------*/
-        /*--------------------------------MODEL ENDPOINTS-----------------------------*/
+        /*--------------------------------MODEL ENDPOINTS----------------------------------*/
         /*---------------------------------------------------------------------------------*/
 
         // Adding a new model to a deployment
@@ -70,7 +68,7 @@ public class Main {
         String singleEndpointUrl = "new_model_endpoint";
         ModelEntity addedModelEntity = null;
         try {
-            addedModelEntity = skilDeploymentClient.addModel(deployment.getId(),
+            addedModelEntity = skilDeploymentClient.addModel(deploymentId,
                     ImportModelRequest.builder()
                             .name(newModelName)
                             .fileLocation(modelFileLocation)
@@ -82,14 +80,14 @@ public class Main {
         }
 
         // Getting all the models in a deployment
-        List<ModelEntity> modelEntities = skilDeploymentClient.getModels(Long.parseLong(deployment.getId()));
+        List<ModelEntity> modelEntities = skilDeploymentClient.getModels(deploymentId);
 
         // Reimporting a model to a model ID in a deployment
         String reimportedModelName = "Reimported-Model";
         ModelEntity reimportedModelEntity = null;
         if (addedModelEntity != null) {
             reimportedModelEntity = skilDeploymentClient.reimportModel(
-                    Long.parseLong(deployment.getId()),
+                    deploymentId,
                     (Long) addedModelEntity.getId(),
                     ImportModelRequest.builder()
                             .name(reimportedModelName)
@@ -100,7 +98,7 @@ public class Main {
         ModelEntity stateChangedModel = null;
         if (addedModelEntity != null) {
             stateChangedModel = skilDeploymentClient.setModelState(
-                    Long.parseLong(deployment.getId()),
+                    deploymentId,
                     (Long) addedModelEntity.getId(),
                     UpdateModelStateRequest.builder()
                             .state(ModelEntity.SetState.STOP)
@@ -111,23 +109,23 @@ public class Main {
         String deletedModelDetails = null;
         if (addedModelEntity != null) {
             deletedModelDetails = skilDeploymentClient.deleteModel(
-                    Long.parseLong(deployment.getId()),
+                    deploymentId,
                     (Long) addedModelEntity.getId()
             );
         }
 
         /*---------------------------------------------------------------------------------*/
-        /*--------------------------------TRANSFORM ENDPOINTS-----------------------------*/
+        /*--------------------------------TRANSFORM ENDPOINTS------------------------------*/
         /*---------------------------------------------------------------------------------*/
 
 
         /*---------------------------------------------------------------------------------*/
-        /*--------------------------------KNN ENDPOINTS-----------------------------*/
+        /*------------------------------------KNN ENDPOINTS--------------------------------*/
         /*---------------------------------------------------------------------------------*/
 
 
         /*---------------------------------------------------------------------------------*/
-        /*--------------------------------Printing details-----------------------------*/
+        /*--------------------------------Printing Responses-------------------------------*/
         /*---------------------------------------------------------------------------------*/
 
         print("----------------------------------------------------------------------------");
@@ -143,6 +141,16 @@ public class Main {
 
         print("\n\n----------------------------Listing all deployments----------------------------------");
         print(MessageFormat.format("Number of Deployments: {0}", deployments.size()));
+
+        if (addedDeploymentResponse != null) {
+            print("\n\n----------------------------Added Deployment----------------------------------");
+            print(MessageFormat.format("Deployment ID: {0} | Name: {1} | Slug: {2} | Status: {3}" +
+                            " | Other Details:\n{4}", addedDeploymentResponse.getId(),
+                    addedDeploymentResponse.getName(),
+                    addedDeploymentResponse.getDeploymentSlug(),
+                    addedDeploymentResponse.getStatus(),
+                    addedDeploymentResponse.getBody()));
+        }
 
         print("\n\n----------------------------Deployment by ID----------------------------------");
         print(MessageFormat.format("Deployment ID: {0} | Name: {1} | Slug: {2} | Status: {3}" +

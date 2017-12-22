@@ -8,7 +8,7 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
     <properties>
-        <skil.version>1.0.0</skil.version>
+        <skil.version>LATEST</skil.version>
         <java.version>1.8</java.version>
         <junit.version>4.12</junit.version>
         <nd4j.artifact>nd4j-native</nd4j.artifact>

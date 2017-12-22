@@ -175,6 +175,56 @@ public class Main {
         /*------------------------------------KNN ENDPOINTS--------------------------------*/
         /*---------------------------------------------------------------------------------*/
 
+        // Adding a new knn to a deployment
+        String newKnnName = "New-Knn";
+        String singleKnnEndpointUrl = "new_knn_endpoint";
+        ModelEntity addedKnnEntity = null;
+        try {
+            addedKnnEntity = skilDeploymentClient.addModel(deploymentId,
+                    ImportModelRequest.builder()
+                            .name(newKnnName)
+                            .fileLocation(knnFileLocation)
+                            .scale(1)
+                            .subType(ModelEntity.ModelType.KNN.name())
+                            .uri(singleKnnEndpointUrl)
+                            .build());
+        } catch (ClientException e) {
+            e.printStackTrace();
+        }
+
+        // Reimporting a knn to a model ID in a deployment
+        String reimportedKnnName = "Reimported-Knn";
+        ModelEntity reimportedKnnEntity = null;
+        if (addedKnnEntity != null) {
+            reimportedKnnEntity = skilDeploymentClient.reimportModel(
+                    deploymentId,
+                    (Long) addedKnnEntity.getId(),
+                    ImportModelRequest.builder()
+                            .name(reimportedKnnName)
+                            .fileLocation(reimportedKnnFileLocation)
+                            .build());
+        }
+
+        // Setting knn state
+        ModelEntity stateChangedKnn = null;
+        if (addedKnnEntity != null) {
+            stateChangedKnn = skilDeploymentClient.setModelState(
+                    deploymentId,
+                    (Long) addedKnnEntity.getId(),
+                    UpdateModelStateRequest.builder()
+                            .state(ModelEntity.SetState.STOP)
+                            .build()
+            );
+        }
+
+        // Deleting the added knn
+        String deletedKnnResponse = null;
+        if (addedKnnEntity != null) {
+            deletedKnnResponse = skilDeploymentClient.deleteModel(
+                    deploymentId,
+                    (Long) addedKnnEntity.getId()
+            );
+        }
 
         /*---------------------------------------------------------------------------------*/
         /*--------------------------------Printing Responses-------------------------------*/
@@ -291,6 +341,38 @@ public class Main {
         print("----------------------------------------------------------------------------");
         print("------------------------------KNNs------------------------------------------");
         print("----------------------------------------------------------------------------");
+
+        if(addedKnnEntity != null) {
+            print("\n\n----------------------------Adding a knn----------------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    addedKnnEntity.getId(),
+                    addedKnnEntity.getName(),
+                    addedKnnEntity.getScale(),
+                    addedKnnEntity.getState(),
+                    addedKnnEntity.getFileLocation()));
+
+            print("\n\n----------------------------Reimporting a knn-----------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    reimportedKnnEntity.getId(),
+                    reimportedKnnEntity.getName(),
+                    reimportedKnnEntity.getScale(),
+                    reimportedKnnEntity.getState(),
+                    reimportedKnnEntity.getFileLocation()));
+
+            print("\n\n----------------------------Changing knn state----------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    stateChangedKnn.getId(),
+                    stateChangedKnn.getName(),
+                    stateChangedKnn.getScale(),
+                    stateChangedKnn.getState(),
+                    stateChangedKnn.getFileLocation()));
+
+            print("\n\n----------------------------Deleting a knn--------------------------------");
+            print("Response: " + deletedKnnResponse);
+        }
     }
 
     private static void print(Object x) {

@@ -91,6 +91,7 @@ public class Main {
                     (Long) addedModelEntity.getId(),
                     ImportModelRequest.builder()
                             .name(reimportedModelName)
+                            .fileLocation(reimportedModelFileLocation)
                             .build());
         }
 
@@ -106,6 +107,7 @@ public class Main {
             );
         }
 
+        // Deleting the added model
         String deletedModelDetails = null;
         if (addedModelEntity != null) {
             deletedModelDetails = skilDeploymentClient.deleteModel(
@@ -154,14 +156,59 @@ public class Main {
 
         print("\n\n----------------------------Deployment by ID----------------------------------");
         print(MessageFormat.format("Deployment ID: {0} | Name: {1} | Slug: {2} | Status: {3}" +
-                        " | Other Details:\n{4}", deploymentId,
+                        " | Other Details:\n{4}",
+                deploymentId,
                 deployment.getName(),
                 deployment.getDeploymentSlug(),
                 deployment.getStatus(),
                 deployment.getBody()));
 
         print("----------------------------------------------------------------------------");
-        print("------------------------------Models-----------------------------------");
+        print("------------------------------Models----------------------------------------");
+        print("----------------------------------------------------------------------------");
+
+        if(addedModelEntity != null) {
+            print("\n\n----------------------------Adding a model----------------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    addedModelEntity.getId(),
+                    addedModelEntity.getName(),
+                    addedModelEntity.getScale(),
+                    addedModelEntity.getState(),
+                    addedModelEntity.getFileLocation()));
+
+            print("\n\n----------------------------Reimporting a model-----------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    reimportedModelEntity.getId(),
+                    reimportedModelEntity.getName(),
+                    reimportedModelEntity.getScale(),
+                    reimportedModelEntity.getState(),
+                    reimportedModelEntity.getFileLocation()));
+
+            print("\n\n----------------------------Changing model state----------------------------");
+            print(MessageFormat.format("Model ID: {0} | Name: {1} | Scale: {2} | State: {3} " +
+                            "| File location:\n{4}",
+                    stateChangedModel.getId(),
+                    stateChangedModel.getName(),
+                    stateChangedModel.getScale(),
+                    stateChangedModel.getState(),
+                    stateChangedModel.getFileLocation()));
+
+            print("\n\n----------------------------Deleting a model--------------------------------");
+            print("Response: " + deletedModelDetails);
+        }
+
+        print("\n\n----------------------------Listing all Models----------------------------------");
+        print(MessageFormat.format("Number of models in deployment id '{0}' -> {1}", deploymentId, modelEntities.size()));
+
+        print("----------------------------------------------------------------------------");
+        print("------------------------------Transforms------------------------------------");
+        print("----------------------------------------------------------------------------");
+
+
+        print("----------------------------------------------------------------------------");
+        print("------------------------------KNNs------------------------------------------");
         print("----------------------------------------------------------------------------");
     }
 

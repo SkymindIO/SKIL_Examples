@@ -68,7 +68,8 @@ public class MNISTModelServerInferenceExample {
 
 
 //    @Parameter(names="--transform", description="Endpoint for Transform", required=true)
-    private String skilInferenceEndpoint = "http://localhost:9008/endpoints/jp_tf_deployment/model/mnistjp5epoch/default/";
+    // mnist/model/mnistmodel/default
+    private String skilInferenceEndpoint = "http://localhost:9008/endpoints/mnist/model/mnistmodel/default/";
     //private String skilInferenceEndpoint = "http://localhost:9601/";
 
 
@@ -125,7 +126,8 @@ public class MNISTModelServerInferenceExample {
 
 
         ImageTransformProcess imgTransformProcess = new ImageTransformProcess.Builder().seed(12345)
-                        .scaleImageTransform(10).cropImageTransform(5).build();
+            .build();
+                        //.scaleImageTransform(10).cropImageTransform(5).build();
 
 
         

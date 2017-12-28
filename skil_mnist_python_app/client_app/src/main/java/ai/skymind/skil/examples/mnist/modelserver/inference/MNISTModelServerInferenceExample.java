@@ -84,74 +84,49 @@ public class MNISTModelServerInferenceExample {
 
 
 
-/*
-    @Parameter(names="--sequential", description="If this transform a sequential one", required=false)
-    private boolean isSequential = false;
 
-    @Parameter(names="--knn", description="Number of K Nearest Neighbors to return", required=false)
-    private int knnN = 20;
-*/
-//    @Parameter(names="--418", description="Temp Fix for DataVec#418", required=false)
-  //  private boolean fix418;
-
-
-    //private ImageSparkTransformServer server = new ImageSparkTransformServer();
+//    @Parameter(names="--blank", description="to send a blank image", required=false)
+//    private boolean isBlank = false;
 
 
 
     public void run() throws Exception, IOException {
-/*
-
-        Unirest.setObjectMapper(new ObjectMapper() {
-            private org.nd4j.shade.jackson.databind.ObjectMapper jacksonObjectMapper =
-                            new org.nd4j.shade.jackson.databind.ObjectMapper();
-
-            public <T> T readValue(String value, Class<T> valueType) {
-                try {
-                    return jacksonObjectMapper.readValue(value, valueType);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            public String writeValue(Object value) {
-                try {
-                    return jacksonObjectMapper.writeValueAsString(value);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        */
-
 
         ImageTransformProcess imgTransformProcess = new ImageTransformProcess.Builder().seed(12345)
             .build();
-                        //.scaleImageTransform(10).cropImageTransform(5).build();
-
 
         
-        final File imageFile = new File( inputImageFile );
+        File imageFile = null;
+        INDArray finalRecord = null;
 
-        if (!imageFile.exists() || !imageFile.isFile()) {
-            System.err.format("unable to access file %s\n", inputImageFile);
-            System.exit(2);
+        if ("blank".equals(inputImageFile)) {
+
+
+            finalRecord = Nd4j.zeros( 1, 28 * 28 ); //imgTransformProcess.executeArray( img ).reshape(1, 28 * 28);
+
+            System.out.println( "Generating blank test image ..." );
+
         } else {
 
+            imageFile = new File( inputImageFile );
 
-            System.out.println( "Inference for: " + inputImageFile );
+            if (!imageFile.exists() || !imageFile.isFile()) {
+                System.err.format("unable to access file %s\n", inputImageFile);
+                System.exit(2);
+            } else {
+
+
+                System.out.println( "Inference for: " + inputImageFile );
+
+            }
+
+            
+            ImageWritable img = imgTransformProcess.transformFileUriToInput( imageFile.toURI() );
+            finalRecord = imgTransformProcess.executeArray( img ).reshape(1, 28 * 28);
 
         }
 
-        //SingleImageRecord record =
-          //              new SingleImageRecord( imageFile.toURI() );
-
-        //Base64NDArrayBody base64returnBytes = imgTransformProcess.toArray( record );
-        // https://github.com/deeplearning4j/DataVec/blob/master/datavec-data/datavec-data-image/src/main/java/org/datavec/image/transform/ImageTransformProcess.java#L99
-        
-        ImageWritable img = imgTransformProcess.transformFileUriToInput( imageFile.toURI() );
-
-        INDArray finalRecord = imgTransformProcess.executeArray( img );
+        //INDArray finalRecord = Nd4j.zeros( 1, 28 * 28 ); //imgTransformProcess.executeArray( img ).reshape(1, 28 * 28);
 
         String imgBase64 = Nd4jBase64.base64String(finalRecord);
 
@@ -178,7 +153,7 @@ public class MNISTModelServerInferenceExample {
         try {
 
             String returnVal =
-                    Unirest.post( skilInferenceEndpoint + "classify" ) //MessageFormat.format("http://{0}:{1}/login", "localhost", "9008"))
+                    Unirest.post( skilInferenceEndpoint + "multiclassify" ) //MessageFormat.format("http://{0}:{1}/login", "localhost", "9008"))
                             .header("accept", "application/json")
                             .header("Content-Type", "application/json")
                             .header( "Authorization", "Bearer " + auth_token)

@@ -1,7 +1,7 @@
 # SKIL_Examples
 Public examples for the SKIL Platform (client examples, notebooks, etc). Versioned for each release.
 
-##Examples Included in the v1.0.1 Release
+## Examples Included in the v1.0.1 Release
 
 * Endpoint Examples
 * MNIST Keras Notebook (python) and Java Client Example

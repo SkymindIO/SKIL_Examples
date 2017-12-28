@@ -6,11 +6,11 @@ Public examples for the SKIL Platform (client examples, notebooks, etc). Version
 * Endpoint Examples
 * MNIST Keras Notebook (python) and Java Client Example
 
-##Running the MNIST Keras Notebook and Model Server Client
+## Running the MNIST Keras Notebook and Model Server Client
 
 Includes a full SKIL application example with a JSON Keras python notebook and an example client in java that base64 encodes MNIST images and sends them to a SKIL Model Server endpoint for classification, returning labels and probabilities.
 
-###Running Model Server Client Code
+### Running Model Server Client Code
 
 (from the client_app subdir)
 

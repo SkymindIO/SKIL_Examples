@@ -1,0 +1,296 @@
+{
+  "paragraphs": [
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509570108515_-724848884",
+      "id": "20171101-210148_1255673681",
+      "dateCreated": "2017-11-01T21:01:48+0000",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500,
+      "$$hashKey": "object:23705",
+      "text": "import scala.collection.JavaConversions._\n\nimport io.skymind.zeppelin.utils._\nimport io.skymind.modelproviders.history.client.ModelHistoryClient\nimport io.skymind.modelproviders.history.model._\n\nimport org.deeplearning4j.datasets.iterator._\nimport org.deeplearning4j.datasets.iterator.impl._\nimport org.deeplearning4j.nn.api._\nimport org.deeplearning4j.nn.multilayer._\nimport org.deeplearning4j.nn.graph._\nimport org.deeplearning4j.nn.conf._\nimport org.deeplearning4j.nn.conf.inputs._\nimport org.deeplearning4j.nn.conf.layers._\nimport org.deeplearning4j.nn.conf.graph.rnn.LastTimeStepVertex\nimport org.deeplearning4j.nn.weights._\nimport org.deeplearning4j.optimize.listeners._\nimport org.deeplearning4j.api.storage.impl.RemoteUIStatsStorageRouter\nimport org.deeplearning4j.ui.stats.StatsListener\nimport org.deeplearning4j.datasets.datavec.RecordReaderMultiDataSetIterator\nimport org.deeplearning4j.eval.Evaluation\n\nimport org.datavec.api.transform._\nimport org.datavec.api.records.reader.RecordReader\nimport org.datavec.api.records.reader.SequenceRecordReader\nimport org.datavec.api.records.reader.impl.csv.CSVRecordReader\nimport org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader\nimport org.datavec.api.split.NumberedFileInputSplit\n\nimport org.nd4j.linalg.activations.Activation\nimport org.nd4j.linalg.learning.config._\nimport org.nd4j.linalg.lossfunctions.LossFunctions._\nimport org.nd4j.linalg.factory.Nd4j\nimport org.nd4j.linalg.primitives.Pair\nimport org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator\nimport org.nd4j.linalg.dataset.api.preprocessor.MultiDataNormalization\nimport org.nd4j.linalg.dataset.api.preprocessor.MultiNormalizerStandardize\nimport org.nd4j.linalg.util.ArrayUtil\n\nimport java.io.File\nimport java.net.URL\nimport java.util.ArrayList\nimport java.util.Collections\nimport java.util.List\nimport java.util.Random\n\nimport org.apache.commons.io.IOUtils\nimport org.apache.commons.io.FileUtils"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576824702_543073812",
+      "id": "20171101-225344_378537553",
+      "dateCreated": "2017-11-01T22:53:44+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:23875",
+      "text": "val skilContext = new SkilContext()\nval client = skilContext.client\n\nval baseDir: File = new File(\"/tmp/uci-data\")\nval baseTrainDir: File = new File(baseDir, \"train\")\nval featuresDirTrain: File = new File(baseTrainDir, \"features\")\nval labelsDirTrain: File = new File(baseTrainDir, \"labels\")\nval baseTestDir: File = new File(baseDir, \"test\")\nval featuresDirTest: File = new File(baseTestDir, \"features\")\nval labelsDirTest: File = new File(baseTestDir, \"labels\")"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576831276_-2000116418",
+      "id": "20171101-225351_169379715",
+      "dateCreated": "2017-11-01T22:53:51+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:23931",
+      "text": "def downloadUCIData() {\n    //Data already exists\n    if (baseDir.exists()) {\n        print (s\"directory $baseDir already exists\")\n        return\n    }\n\n    val url: String =\n        \"https://archive.ics.uci.edu/ml/machine-learning-databases/synthetic_control-mld/synthetic_control.data\"\n    val data: String = IOUtils.toString(new URL(url))\n    val lines: Array[String] = data.split(\"\\n\")\n    print (s\"downloaded data from $url to $baseDir\")\n\n    // Perhaps redundant / unreachable code!\n    if (baseDir.exists()) {\n        baseDir.delete()\n    }\n\n    baseDir.mkdir()\n    baseTrainDir.mkdir()\n    featuresDirTrain.mkdir()\n    labelsDirTrain.mkdir()\n    baseTestDir.mkdir()\n    featuresDirTest.mkdir()\n    labelsDirTest.mkdir()\n\n    var lineCount: Int = 0\n    val contentAndLabels: List[Pair[String, Integer]] =\n        new ArrayList[Pair[String, Integer]]()\n\n    for (line <- lines) {\n        val transposed: String = line.replaceAll(\" +\", \"\\n\")\n        //Labels: first 100 are label 0, second 100 are label 1, and so on\n\n        contentAndLabels.add(new Pair(transposed, (lineCount / 100)))\n        lineCount += 1\n    }\n\n    // Randomize and do a train/test split:\n    Collections.shuffle(contentAndLabels, new Random(12345))\n\n    //75% train, 25% test\n    val nTrain: Int = 450\n    var trainCount: Int = 0\n    var testCount: Int = 0\n    for (p <- contentAndLabels) {\n        var outPathFeatures: File = null\n        var outPathLabels: File = null\n        if (trainCount < nTrain) {\n            outPathFeatures = new File(featuresDirTrain, trainCount + \".csv\")\n            outPathLabels = new File(labelsDirTrain, trainCount + \".csv\")\n            trainCount += 1\n        } else {\n            outPathFeatures = new File(featuresDirTest, testCount + \".csv\")\n            outPathLabels = new File(labelsDirTest, testCount + \".csv\")\n            testCount += 1\n        }\n\n        FileUtils.writeStringToFile(outPathFeatures, p.getFirst)\n        FileUtils.writeStringToFile(outPathLabels, p.getSecond.toString)\n    }\n}\n\n// Download data as needed\ndownloadUCIData()"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576842684_-407625396",
+      "id": "20171101-225402_482689833",
+      "dateCreated": "2017-11-01T22:54:02+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:23987",
+      "text": "// Load the training data\nval trainFeatures: SequenceRecordReader = new CSVSequenceRecordReader()\ntrainFeatures.initialize(\n    new NumberedFileInputSplit(\n        featuresDirTrain.getAbsolutePath + \"/%d.csv\",\n        0,\n        449))\n\nval trainLabels: RecordReader = new CSVRecordReader()\ntrainLabels.initialize(new NumberedFileInputSplit(\n    labelsDirTrain.getAbsolutePath + \"/%d.csv\",\n    0,\n    449))\n\nval minibatch: Int = 10\nval numLabelClasses: Int = 6\n\nval trainData: MultiDataSetIterator = new RecordReaderMultiDataSetIterator.Builder(minibatch)\n    .addSequenceReader(\"features\", trainFeatures)\n    .addReader(\"labels\", trainLabels)\n    .addInput(\"features\")\n    .addOutputOneHot(\"labels\", 0, numLabelClasses)\n    .build()"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576853631_524651837",
+      "id": "20171101-225413_2011712578",
+      "dateCreated": "2017-11-01T22:54:13+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:24043",
+      "text": "// Normalize the training data\ndef makeNormalizer( mds:MultiDataSetIterator ) : MultiNormalizerStandardize = {\n    val n = new MultiNormalizerStandardize()\n\n    // Collect training data statistics\n    n.fit(mds)\n    mds.reset()\n    return n\n}\n\nval normalizer = makeNormalizer(trainData)\nval mean = normalizer.getFeatureMean(0)\nval std = normalizer.getFeatureStd(0)\n\nprintln(s\"Mean: $mean, Std: $std\")\n\n// Use previously collected statistics to normalize on-the-fly\ntrainData.setPreProcessor(normalizer)"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576866423_-1245193103",
+      "id": "20171101-225426_1870227071",
+      "dateCreated": "2017-11-01T22:54:26+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:24099",
+      "text": "// Load the test data\nval testFeatures: SequenceRecordReader = new CSVSequenceRecordReader()\ntestFeatures.initialize(new NumberedFileInputSplit(\n    featuresDirTest.getAbsolutePath + \"/%d.csv\",\n    0,\n    149))\n\nval testLabels: RecordReader = new CSVRecordReader()\ntestLabels.initialize(\n    new NumberedFileInputSplit(labelsDirTest.getAbsolutePath + \"/%d.csv\",\n    0,\n    149))\n\nval testData: MultiDataSetIterator = new RecordReaderMultiDataSetIterator.Builder(minibatch)\n    .addSequenceReader(\"features\", testFeatures)\n    .addReader(\"labels\", testLabels)\n    .addInput(\"features\")\n    .addOutputOneHot(\"labels\", 0, numLabelClasses)\n    .build()\n\ntestData.setPreProcessor(normalizer)"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576874566_-1205347783",
+      "id": "20171101-225434_2074453637",
+      "dateCreated": "2017-11-01T22:54:34+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:24155",
+      "text": "// Configure the network\nval conf: ComputationGraphConfiguration = new NeuralNetConfiguration.Builder()\n    .seed(123)\n    .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)\n    .iterations(1)\n    .weightInit(WeightInit.XAVIER)\n    .updater(new Nesterovs(0.005, 0.9))\n    .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)\n    .gradientNormalizationThreshold(0.5)\n    .graphBuilder()\n    .addInputs(\"input\")\n    .setInputTypes(InputType.recurrent(1))\n    .addLayer(\"lstm\", new GravesLSTM.Builder().activation(Activation.TANH).nIn(1).nOut(10).build(), \"input\")\n    .addVertex(\"pool\", new LastTimeStepVertex(\"input\"), \"lstm\")\n    .addLayer(\"output\", new OutputLayer.Builder(LossFunction.MCXENT)\n           .activation(Activation.SOFTMAX).nIn(10).nOut(numLabelClasses).build(), \"pool\")\n    .setOutputs(\"output\")\n    .pretrain(false)\n    .backprop(true)\n    .build()\n\nval network_model: ComputationGraph = new ComputationGraph(conf)\nnetwork_model.init()"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576882229_152061660",
+      "id": "20171101-225442_1996108808",
+      "dateCreated": "2017-11-01T22:54:42+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:24211",
+      "text": "def eval(it:MultiDataSetIterator) : Evaluation = {\n    val evaluation = new Evaluation(numLabelClasses)\n\n    it.reset()\n    while (it.hasNext()) {\n        val ds = it.next()\n        val prediction = network_model.outputSingle(ds.getFeatures(0))\n\n        evaluation.eval(ds.getLabels(0), prediction)\n    }\n\n    return evaluation\n}"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576893261_-45668626",
+      "id": "20171101-225453_1280958670",
+      "dateCreated": "2017-11-01T22:54:53+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:24267",
+      "text": "// Train the network, evaluating the test set performance at each step\ntrainData.reset()\ntestData.reset()\n\nval nEpochs: Int = 40\n\nfor (i <- 0 until nEpochs) {\n    network_model.fit(trainData)\n\n    // Evaluate on the test set:\n    val evaluation = eval(testData)\n    var accuracy = evaluation.accuracy()\n    var f1 = evaluation.f1()\n\n    println(s\"Test set evaluation at epoch $i: Accuracy = $accuracy, F1 = $f1\")\n\n    testData.reset()\n    trainData.reset()\n}"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576900263_1891157337",
+      "id": "20171101-225500_990879061",
+      "dateCreated": "2017-11-01T22:55:00+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:24323",
+      "text": "// Save Model\nvar evaluation = eval(testData)\nval modelId = skilContext.addModelToExperiment(z, network_model)\nval evalId = skilContext.addEvaluationToModel(z, modelId, evaluation)"
+    },
+    {
+      "user": "admin",
+      "config": {
+        "colWidth": 12,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1509576908560_-1191835599",
+      "id": "20171101-225508_1617797027",
+      "dateCreated": "2017-11-01T22:55:08+0000",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500,
+      "focus": true,
+      "$$hashKey": "object:24379",
+      "text": "// Test one record (label should be 1)\nval record = Array(Array(Array(\n    -1.65, 1.38, 1.37, 2.56, 2.72, 0.64, 0.76, 0.45, -0.28, -2.72, -2.85, -2.27, -1.23, -1.42, 0.90,\n    1.81, 2.77, 1.12, 2.25, 1.26, -0.23, -0.27, -1.74, -1.90, -1.56, -1.35, -0.54, 0.41, 1.20, 1.59,\n    1.66, 0.75, 0.96, 0.07, -0.70, -0.32, -1.13, -0.77, -0.96, -0.55, 0.39, 0.56, 0.52, 0.98, 0.91,\n    0.23, -0.13, -0.31, -0.98, -0.73, -0.85, -0.77, -0.80, -0.04, 0.64, 0.77, 0.50, 0.98, 0.40, 0.24\n)))\n\nvar flattened = ArrayUtil.flattenDoubleArray(record)\nvar input = Nd4j.create(flattened, Array(1, 1, 60), 'c')\nvar output = network_model.output(input)\nvar label = Nd4j.argMax(output(0), -1)\n\nprintln(s\"Label: $label\")"
+    }
+  ],
+  "name": "/test",
+  "id": "2CYXC1A7Q",
+  "angularObjects": {
+    "2CY59DJ3F:existing_process": [],
+    "2CWTVMQ16:existing_process": [],
+    "2CXKR8AY3:existing_process": [],
+    "2CZMTZM5M:existing_process": [],
+    "2CZRDRJAM:existing_process": [],
+    "2CVZMMGB8:existing_process": [],
+    "2CW1E3N6Z:existing_process": [],
+    "2CXRW2SWK:existing_process": []
+  },
+  "config": {
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {}
+}

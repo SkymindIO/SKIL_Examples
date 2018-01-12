@@ -1,0 +1,112 @@
+{
+  "DataAnalysis" : [ {
+    "columnName" : "Sepal length",
+    "columnIndex" : 0,
+    "columnType" : "Double",
+    "analysis" : {
+      "DoubleAnalysis" : {
+        "mean" : 5.843333333333332,
+        "sampleStdev" : 0.8280661279778634,
+        "sampleVariance" : 0.6856935123042512,
+        "countZero" : 0,
+        "countNegative" : 0,
+        "countPositive" : 150,
+        "countMinValue" : 1,
+        "countMaxValue" : 1,
+        "countTotal" : 150,
+        "histogramBuckets" : [ 4.3, 4.66, 5.02, 5.38, 5.74, 6.1, 6.46, 6.82, 7.18, 7.54, 7.9 ],
+        "histogramBucketCounts" : [ 9, 23, 14, 27, 16, 26, 18, 6, 5, 6 ],
+        "min" : 4.3,
+        "max" : 7.9,
+        "countNaN" : 0
+      }
+    }
+  }, {
+    "columnName" : "Sepal width",
+    "columnIndex" : 1,
+    "columnType" : "Double",
+    "analysis" : {
+      "DoubleAnalysis" : {
+        "mean" : 3.0540000000000007,
+        "sampleStdev" : 0.43359431136217363,
+        "sampleVariance" : 0.18800402684563758,
+        "countZero" : 0,
+        "countNegative" : 0,
+        "countPositive" : 150,
+        "countMinValue" : 1,
+        "countMaxValue" : 1,
+        "countTotal" : 150,
+        "histogramBuckets" : [ 2.0, 2.24, 2.48, 2.72, 2.96, 3.2, 3.4400000000000004, 3.6800000000000006, 3.9200000000000004, 4.16, 4.4 ],
+        "histogramBucketCounts" : [ 4, 7, 22, 24, 38, 31, 9, 11, 2, 2 ],
+        "min" : 2.0,
+        "max" : 4.4,
+        "countNaN" : 0
+      }
+    }
+  }, {
+    "columnName" : "Petal length",
+    "columnIndex" : 2,
+    "columnType" : "Double",
+    "analysis" : {
+      "DoubleAnalysis" : {
+        "mean" : 3.758666666666668,
+        "sampleStdev" : 1.7644204199522622,
+        "sampleVariance" : 3.113179418344517,
+        "countZero" : 0,
+        "countNegative" : 0,
+        "countPositive" : 150,
+        "countMinValue" : 1,
+        "countMaxValue" : 1,
+        "countTotal" : 150,
+        "histogramBuckets" : [ 1.0, 1.59, 2.18, 2.7700000000000005, 3.3600000000000003, 3.95, 4.540000000000001, 5.130000000000001, 5.720000000000001, 6.3100000000000005, 6.9 ],
+        "histogramBucketCounts" : [ 37, 13, 0, 3, 8, 26, 29, 18, 11, 5 ],
+        "min" : 1.0,
+        "max" : 6.9,
+        "countNaN" : 0
+      }
+    }
+  }, {
+    "columnName" : "Petal width",
+    "columnIndex" : 3,
+    "columnType" : "Double",
+    "analysis" : {
+      "DoubleAnalysis" : {
+        "mean" : 1.1986666666666665,
+        "sampleStdev" : 0.7631607417008414,
+        "sampleVariance" : 0.5824143176733783,
+        "countZero" : 0,
+        "countNegative" : 0,
+        "countPositive" : 150,
+        "countMinValue" : 6,
+        "countMaxValue" : 3,
+        "countTotal" : 150,
+        "histogramBuckets" : [ 0.1, 0.33999999999999997, 0.58, 0.82, 1.06, 1.3, 1.54, 1.78, 2.02, 2.2600000000000002, 2.5 ],
+        "histogramBucketCounts" : [ 41, 8, 1, 7, 8, 33, 6, 23, 9, 14 ],
+        "min" : 0.1,
+        "max" : 2.5,
+        "countNaN" : 0
+      }
+    }
+  }, {
+    "columnName" : "Species",
+    "columnIndex" : 4,
+    "columnType" : "Integer",
+    "analysis" : {
+      "IntegerAnalysis" : {
+        "mean" : 1.0,
+        "sampleStdev" : 0.8192319205190404,
+        "sampleVariance" : 0.6711409395973154,
+        "countZero" : 50,
+        "countNegative" : 0,
+        "countPositive" : 100,
+        "countMinValue" : 50,
+        "countMaxValue" : 50,
+        "countTotal" : 150,
+        "histogramBuckets" : [ 0.0, 0.2, 0.4, 0.6000000000000001, 0.8, 1.0, 1.2000000000000002, 1.4000000000000001, 1.6, 1.8, 2.0 ],
+        "histogramBucketCounts" : [ 50, 0, 0, 0, 0, 50, 0, 0, 0, 50 ],
+        "min" : 0,
+        "max" : 2
+      }
+    }
+  } ]
+}

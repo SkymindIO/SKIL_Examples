@@ -1,0 +1,75 @@
+{
+  "initialSchema" : {
+    "Schema" : {
+      "columns" : [ {
+        "Double" : {
+          "name" : "Sepal length",
+          "allowNaN" : false,
+          "allowInfinite" : false
+        }
+      }, {
+        "Double" : {
+          "name" : "Sepal width",
+          "allowNaN" : false,
+          "allowInfinite" : false
+        }
+      }, {
+        "Double" : {
+          "name" : "Petal length",
+          "allowNaN" : false,
+          "allowInfinite" : false
+        }
+      }, {
+        "Double" : {
+          "name" : "Petal width",
+          "allowNaN" : false,
+          "allowInfinite" : false
+        }
+      }, {
+        "Integer" : {
+          "name" : "Species"
+        }
+      } ]
+    }
+  },
+  "actionList" : [ {
+    "transform" : {
+      "RemoveColumnsTransform" : {
+        "columnsToRemove" : [ "Species" ],
+        "leftOverColumns" : [ "Sepal length", "Sepal width", "Petal length", "Petal width" ]
+      }
+    }
+  }, {
+    "transform" : {
+      "StandardizeNormalizer" : {
+        "columnName" : "Sepal length",
+        "mean" : 5.843333333333332,
+        "stdev" : 0.8280661279778634
+      }
+    }
+  }, {
+    "transform" : {
+      "StandardizeNormalizer" : {
+        "columnName" : "Sepal width",
+        "mean" : 3.0540000000000007,
+        "stdev" : 0.43359431136217363
+      }
+    }
+  }, {
+    "transform" : {
+      "StandardizeNormalizer" : {
+        "columnName" : "Petal length",
+        "mean" : 3.758666666666668,
+        "stdev" : 1.7644204199522622
+      }
+    }
+  }, {
+    "transform" : {
+      "StandardizeNormalizer" : {
+        "columnName" : "Petal width",
+        "mean" : 1.1986666666666665,
+        "stdev" : 0.7631607417008414
+      }
+    }
+  } ]
+}

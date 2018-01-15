@@ -60,10 +60,27 @@
 
     <dependencies>
 
+<!--
+        <dependency>
+            <groupId>io.skymind</groupId>
+            <artifactId>skil-predict-client</artifactId>
+            <version>1.0.1-RC1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.skymind</groupId>
+            <artifactId>skil-auth-client</artifactId>
+            <version>1.0.1-RC1</version>
+        </dependency>
+-->
 
 
 
-
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
+            <artifactId>deeplearning4j-nn</artifactId>
+            <version>${dl4j.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.nd4j</groupId>

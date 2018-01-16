@@ -9,6 +9,7 @@ import io.skymind.skil.service.model.MultiClassClassificationResult;
 import io.skymind.skil.service.model.Prediction;
 */
 
+import ai.skymind.skil.examples.yolo2.modelserver.inference.DetectedObject;
 
 import org.datavec.image.data.ImageWritable;
 
@@ -26,11 +27,13 @@ import org.nd4j.serde.base64.Nd4jBase64;
 
 
 import com.mashape.unirest.http.JsonNode;
+//import com.mashape.unirest.http.JsonArray;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import java.io.IOException;
 
 import com.mashape.unirest.http.Unirest;
@@ -185,7 +188,7 @@ public class YOLO2_TF_Client {
 
         String imgBase64 = Nd4jBase64.base64String(finalRecord);
 
-        System.out.println( imgBase64 );  
+        //System.out.println( imgBase64 );  
 
         System.out.println( "Finished image conversion" );
 
@@ -195,7 +198,7 @@ public class YOLO2_TF_Client {
 
 
 
-    private void skilClientGetImageInference( String imgBase64 ) {
+    private void skilClientGetImageInference( String imgBase64 ) throws Exception, IOException  {
 
         Authorization auth = new Authorization();
         String auth_token = auth.getAuthToken( "admin", "admin" );
@@ -207,7 +210,9 @@ public class YOLO2_TF_Client {
 
         try {
 
-            String returnVal =
+//            String returnVal =
+
+            JSONObject returnJSONObject = 
                     Unirest.post( skilInferenceEndpoint + "predict" ) 
                             .header("accept", "application/json")
                             .header("Content-Type", "application/json")
@@ -217,10 +222,42 @@ public class YOLO2_TF_Client {
                                     .put("prediction", new JSONObject().put("array", imgBase64))
                                     .toString())
                             .asJson()
-                            .getBody().getObject().toString(); 
+                            .getBody().getObject(); //.toString(); 
 
 
-            System.out.println( "classification return: " + returnVal );
+            //System.out.println( "return data: " + returnJSONObject.toString() + "\n\n" );
+
+            // extract fields from the object
+//            String predict_return_array = returnJSONObject.getString("array");
+            
+
+            String predict_return_array = returnJSONObject.getJSONObject("prediction").getString("array");
+
+
+            System.out.println( "classification return length: " + predict_return_array.length() );
+
+            //System.out.println( "return data: " + returnVal + "\n\n" );
+
+            INDArray networkOutput = Nd4jBase64.fromBase64( predict_return_array );
+
+            List<DetectedObject> list_objects = getPredictedObjects( networkOutput, 0.7 );
+
+            System.out.println( "Objects found: " + list_objects.size() );
+
+//System.out.println( "return data: " + predict_return_array + "\n\n" );
+/*
+            JSONArray jsonarray = returnJSONObject.getJSONArray();
+
+//String[] names = new String[jsonArray.length()];    
+//String[] formattedNames = new String[jsonArray.length()];  
+
+            for(int i=0;i<jsonArray.length();i++)
+            {
+
+                System.out.println( "Objects found: " + jsonArray.getJSONObject(i) );
+
+            }
+*/
 
         } catch (UnirestException e) {
             e.printStackTrace();
@@ -228,9 +265,6 @@ public class YOLO2_TF_Client {
 
     }
 
-
-
-/*
     public static List<DetectedObject> getPredictedObjects(INDArray networkOutput, double threshold){
         if(networkOutput.rank() != 4){
             throw new IllegalStateException("Invalid network output activations array: should be rank 4. Got array "
@@ -285,7 +319,7 @@ public class YOLO2_TF_Client {
 
         return out;
     }
-*/
+
 
 
 

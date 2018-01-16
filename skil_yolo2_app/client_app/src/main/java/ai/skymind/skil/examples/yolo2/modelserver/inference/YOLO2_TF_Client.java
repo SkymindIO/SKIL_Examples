@@ -23,6 +23,9 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.serde.base64.Nd4jBase64;
 
+import org.nd4j.linalg.api.ops.impl.broadcast.BroadcastMulOp;
+//import org.nd4j.linalg.factory.Broadcast;
+
 //import ai.skymind.skil.examples.mnist.modelserver.inference.model.TransformedImage;
 
 
@@ -50,6 +53,9 @@ import java.text.MessageFormat;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+
+import org.nd4j.linalg.ops.transforms.Transforms;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -240,6 +246,14 @@ public class YOLO2_TF_Client {
 
             INDArray networkOutput = Nd4jBase64.fromBase64( predict_return_array );
 
+
+
+
+            // TODO: before we can extract detected objects, we need to apply activation functions
+
+
+
+
             List<DetectedObject> list_objects = getPredictedObjects( networkOutput, 0.7 );
 
             System.out.println( "Objects found: " + list_objects.size() );
@@ -265,6 +279,92 @@ public class YOLO2_TF_Client {
 
     }
 
+
+
+    /**
+     * Output (loss) layer for YOLOv2 object detection model, based on the papers:
+     * YOLO9000: Better, Faster, Stronger - Redmon & Farhadi (2016) - https://arxiv.org/abs/1612.08242<br>
+     * and<br>
+     * You Only Look Once: Unified, Real-Time Object Detection - Redmon et al. (2016) -
+     * http://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf<br>
+     * <br>
+     * This loss function implementation is based on the YOLOv2 version of the paper. However, note that it doesn't
+     * currently support simultaneous training on both detection and classification datasets as described in the
+     * YOlO9000 paper.<br>
+     * <br>
+     * Label format: [minibatch, 4+C, H, W]<br>
+     * Order for labels depth: [x1,y1,x2,y2,(class labels)]<br>
+     * x1 = box top left position<br>
+     * y1 = as above, y axis<br>
+     * x2 = box bottom right position<br>
+     * y2 = as above y axis<br>
+     * Note: labels are represented as a multiple of grid size - for a 13x13 grid, (0,0) is top left, (13,13) is bottom right<br>
+     * <br>
+     * Input format: [minibatch, B*(5+C), H, W]    ->      Reshape to [minibatch, B, 5+C, H, W]<br>
+     * B = number of bounding boxes (determined by config)<br>
+     * C = number of classes<br>
+     * H = output/label height<br>
+     * W = output/label width<br>
+     * <br>
+     * Note that mask arrays are not required - this implementation infers the presence or absence of objects in each grid
+     * cell from the class labels (which should be 1-hot if an object is present, or all 0s otherwise).
+     *
+     * @author Alex Black
+     */
+    private INDArray activate(INDArray input, boolean training, int numberOfBoundingBoxes) {
+        //Essentially: just apply activation functions...
+
+
+        // ---- get the base variables -------------
+        int mb = input.size(0);         // minibatch?
+        int h = input.size(2);          // output/label height
+        int w = input.size(3);          // output/label width
+        int b = numberOfBoundingBoxes; 
+        int c = (input.size(1)/b)-5;  //input.size(1) == b * (5 + C) -> C = (input.size(1)/b) - 5 // number of classes
+
+        // ---- start computing intermediate stuff -------
+        INDArray output = Nd4j.create(input.shape(), 'c');
+        INDArray output5 = output.reshape('c', mb, b, 5+c, h, w);
+        INDArray output4 = output;  //output.get(all(), interval(0,5*b), all(), all());
+        INDArray input4 = input.dup('c');    //input.get(all(), interval(0,5*b), all(), all()).dup('c');
+        INDArray input5 = input4.reshape('c', mb, b, 5+c, h, w);
+
+        //X/Y center in grid: sigmoid
+        INDArray predictedXYCenterGrid = input5.get(all(), all(), interval(0,2), all(), all());
+        Transforms.sigmoid(predictedXYCenterGrid, false);
+
+        //width/height: prior * exp(input)
+        INDArray predictedWHPreExp = input5.get(all(), all(), interval(2,4), all(), all());
+        INDArray predictedWH = Transforms.exp(predictedWHPreExp, false);
+
+// TODO: commented out due to issues w missing Broadcast entry
+//        Broadcast.mul(predictedWH, layerConf().getBoundingBoxes(), predictedWH, 1, 2);  //Box priors: [b, 2]; predictedWH: [mb, b, 2, h, w]
+
+        //Confidence - sigmoid
+        INDArray predictedConf = input5.get(all(), all(), point(4), all(), all());   //Shape: [mb, B, H, W]
+        Transforms.sigmoid(predictedConf, false);
+
+        output4.assign(input4);
+
+        //Softmax
+        //TODO OPTIMIZE?
+        INDArray inputClassesPreSoftmax = input5.get(all(), all(), interval(5, 5+c), all(), all());   //Shape: [minibatch, C, H, W]
+        INDArray classPredictionsPreSoftmax2d = inputClassesPreSoftmax.permute(0,1,3,4,2) //[minibatch, b, c, h, w] To [mb, b, h, w, c]
+                .dup('c').reshape('c', new int[]{mb*b*h*w, c});
+        Transforms.softmax(classPredictionsPreSoftmax2d, false);
+        INDArray postSoftmax5d = classPredictionsPreSoftmax2d.reshape('c', mb, b, h, w, c ).permute(0, 1, 4, 2, 3);
+
+        INDArray outputClasses = output5.get(all(), all(), interval(5, 5+c), all(), all());   //Shape: [minibatch, C, H, W]
+        outputClasses.assign(postSoftmax5d);
+
+        return output;
+    }
+
+    /*
+
+        code to parse individual bounding boxes from network output
+
+    */
     public static List<DetectedObject> getPredictedObjects(INDArray networkOutput, double threshold){
         if(networkOutput.rank() != 4){
             throw new IllegalStateException("Invalid network output activations array: should be rank 4. Got array "

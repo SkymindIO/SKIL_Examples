@@ -104,6 +104,10 @@ import static org.nd4j.linalg.indexing.NDArrayIndex.point;
 
     https://github.com/experiencor/basic-yolo-keras/blob/master/frontend.py#L289
 
+    Similar to:
+
+    https://github.com/deeplearning4j/deeplearning4j/blob/3c260c3a607b91d1cbbde495b76c7d1827ba0851/deeplearning4j-nn/src/main/java/org/deeplearning4j/nn/layers/objdetect/Yolo2OutputLayer.java#L631
+
 
 */
 public class YOLO2_TF_Client {
@@ -157,7 +161,7 @@ public class YOLO2_TF_Client {
 
         if ("blank".equals(inputImageFile)) {
 
-            finalRecord = Nd4j.zeros( 1, 28 * 28 );
+            finalRecord = Nd4j.zeros( 1, 608, 608, 3 );
 
             System.out.println( "Generating blank test image ..." );
 
@@ -204,7 +208,7 @@ public class YOLO2_TF_Client {
         try {
 
             String returnVal =
-                    Unirest.post( skilInferenceEndpoint + "predictArray" ) 
+                    Unirest.post( skilInferenceEndpoint + "predict" ) 
                             .header("accept", "application/json")
                             .header("Content-Type", "application/json")
                             .header( "Authorization", "Bearer " + auth_token)

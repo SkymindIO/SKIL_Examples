@@ -1,68 +1,68 @@
 package ai.skymind.skil.examples.yolo2.modelserver.inference;
 
-/*
-import io.skymind.auth.AuthClient;
-import io.skymind.skil.predict.client.PredictServiceClient;
-import io.skymind.skil.service.model.ClassificationResult;
-import io.skymind.skil.service.model.JsonArrayResponse;
-import io.skymind.skil.service.model.MultiClassClassificationResult;
-import io.skymind.skil.service.model.Prediction;
-*/
+import ai.skymind.skil.examples.yolo2.modelserver.inference.yolo2.*;
 
-import ai.skymind.skil.examples.yolo2.modelserver.inference.DetectedObject;
+import org.deeplearning4j.nn.layers.objdetect.DetectedObject;
 
+import org.datavec.image.data.Image;
+import org.datavec.image.loader.NativeImageLoader;
+import org.datavec.image.transform.ColorConversionTransform;
+import org.datavec.image.data.Image;
+import org.datavec.image.loader.NativeImageLoader;
+import org.datavec.image.transform.ColorConversionTransform;
 import org.datavec.image.data.ImageWritable;
-
 import org.datavec.api.util.ClassPathResource;
 import org.datavec.image.transform.ImageTransformProcess;
 import org.datavec.spark.transform.model.Base64NDArrayBody;
 import org.datavec.spark.transform.model.BatchImageRecord;
 import org.datavec.spark.transform.model.SingleImageRecord;
+import org.datavec.image.data.Image;
+import org.datavec.image.loader.NativeImageLoader;
+import org.datavec.image.transform.ColorConversionTransform;
 
+
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.api.memory.MemoryWorkspace;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Broadcast;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.serde.base64.Nd4jBase64;
-
 import org.nd4j.linalg.api.ops.impl.broadcast.BroadcastMulOp;
-//import org.nd4j.linalg.factory.Broadcast;
-
-//import ai.skymind.skil.examples.mnist.modelserver.inference.model.TransformedImage;
-
-
-import com.mashape.unirest.http.JsonNode;
-//import com.mashape.unirest.http.JsonArray;
-import com.mashape.unirest.http.ObjectMapper;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONObject;
-import org.json.JSONArray;
-import java.io.IOException;
-
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONObject;
-
-import java.text.MessageFormat;
-
-
-// --
-
-//import org.deeplearning4j.nn.layers.objdetect.DetectedObject;
-
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-
+import org.nd4j.linalg.ops.transforms.Transforms;
+import org.nd4j.linalg.api.memory.MemoryWorkspace;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Broadcast;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
+import static org.nd4j.linalg.indexing.NDArrayIndex.all;
+import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
+import static org.nd4j.linalg.indexing.NDArrayIndex.point;
 
+
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.ObjectMapper;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+
+
+import java.text.MessageFormat;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,8 +70,17 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.List;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -79,14 +88,29 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.JCommander;
 
+import org.apache.commons.io.IOUtils;
 
 
-import static org.nd4j.linalg.indexing.NDArrayIndex.all;
-import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
-import static org.nd4j.linalg.indexing.NDArrayIndex.point;
+import org.bytedeco.javacv.CanvasFrame;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
 
 
 /**
@@ -119,107 +143,100 @@ import static org.nd4j.linalg.indexing.NDArrayIndex.point;
 
 
 */
-public class YOLO2_TF_Client {
+public class YOLO2_TF_Client extends Application {
 
+    public static final int nClasses = 80;
+    public static final int gridWidth = 19;
+    public static final int gridHeight = 19;
+    public static final double[][] priorBoxes = {{0.57273, 0.677385}, {1.87446, 2.06253}, {3.33843, 5.47434}, {7.88282, 3.52778}, {9.77052, 9.16828}};
+
+    private static final String[] CLASSES = { "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
+            "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa",
+            "train", "tvmonitor", "truck", "traffic light" };
+
+    private static final String[] COLORS = { "#6793be", "#990000", "#fececf", "#ffbcc9", "#ffb9c7", "#fdc6d1",
+            "#fdc9d3", "#6793be", "#73a4d4", "#9abde0", "#9abde0", "#8fff8f", "#ffcfd8", "#808080", "#808080",
+            "#ffba00", "#6699ff", "#009933", "#1c1c1c", "#08375f", "#116ebf", "#e61d35", "#106bff", "#8f8fff",
+            "#8fff8f", "#dbdbff", "#dbffdb", "#dbffff", "#ffdbdb", "#ffc2c2", "#ffa8a8", "#ff8f8f", "#e85e68",
+            "#123456", "#5cd38c", "#1d1f5f", "#4e4b04", "#495a5b", "#489d73", "#9d4872", "#d49ea6", "#ff0080" };
 
     @Parameter(names="--endpoint", description="Endpoint for classification", required=true)
     private String skilInferenceEndpoint = ""; // EXAMPLE: "http://localhost:9008/endpoints/mnist/model/mnistmodel/default/";
 
-    @Parameter(names="--input", description="image input file", required=true)
-    private String inputImageFile = "";
+    // this is public cause the canvas object needs it on creation --> hack
+    @Parameter(names="--input", description="Image input file url", required=true)
+    public String input_image = "";
+
+    static InputStream inputFileStream = null;
+    static INDArray networkGlobalOutput = null;
+
+    static List<DetectedObject> predictedObjects = null;
+    Mat imgMat = null;
+    
+    static String source_image = ""; // "https://raw.githubusercontent.com/pjreddie/darknet/master/data/dog.jpg";
+    int imageWidth = 0, imageHeight = 0, imageChannels = 3;
+
+    public YOLO2_TF_Client() { }
+
+    public YOLO2_TF_Client( String sourceImage ) {
+
+        this.source_image = sourceImage;
+
+    }
+
 
 /*
-    public static void main(String... args) throws Exception {
-        AuthClient authClient = new AuthClient("http://localhost:9008");
-        authClient.login("admin", "admin");
-        String authToken = authClient.getAuthToken();
+    Images
 
-        String basePath = "http://host:9008/endpoints/tf_models/model/yolo2/default";
-        //String basePath = "http://localhost:9008/endpoints/foo/model/bar/default";
-        //String basePath = "http://localhost:9602";
-        PredictServiceClient client = new PredictServiceClient(basePath);
-        client.setAuthToken(authToken);
+        Dog
+                "https://raw.githubusercontent.com/deeplearning4j/deeplearning4j/master/deeplearning4j-zoo/src/main/resources/goldenretriever.jpg"
+                224x224 - 3 channels
 
-        INDArray black = Nd4j.zeros(1, 608, 608, 3);
-        //INDArray eye = Nd4j.eye(28).reshape(1, 28 * 28);
-        Prediction input = new Prediction(black, "black");
+        Dog + Bike
+            https://raw.githubusercontent.com/pjreddie/darknet/master/data/dog.jpg
+            635x476
 
-        long start = System.nanoTime();
-        for (int i = 0; i < 1; i++) {
-            JsonArrayResponse result = client.jsonArrayPredict(input);
-            List<DetectedObject> predictedObjects = getPredictedObjects(result.getArray(), 0.6);
-
-            for (DetectedObject o : predictedObjects) {
-                System.out.println(o.toString());
-            }
-        }
-        long end = System.nanoTime();
-
-        System.out.println((end - start) / 1000000 + " ms");
-    }
-    */
-
-
+*/
     public void run() throws Exception, IOException {
 
-        ImageTransformProcess imgTransformProcess = new ImageTransformProcess.Builder().seed(12345)
-            .build();
-        
-        File imageFile = null;
-        INDArray finalRecord = null;
+        //List<String> labels = IOUtils.readLines(new URL("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names").openStream());
 
-        if ("blank".equals(inputImageFile)) {
+        // make model server network calls for { auth, inference }
+        skilClientGetImageInference( imageWidth, imageHeight );
 
-            finalRecord = Nd4j.zeros( 1, 608, 608, 3 );
-
-            System.out.println( "Generating blank test image ..." );
-
-        } else {
-
-            imageFile = new File( inputImageFile );
-
-            if (!imageFile.exists() || !imageFile.isFile()) {
-                System.err.format("unable to access file %s\n", inputImageFile);
-                System.exit(2);
-            } else {
-
-                System.out.println( "Inference for: " + inputImageFile );
-
-            }
-
-            ImageWritable img = imgTransformProcess.transformFileUriToInput( imageFile.toURI() );
-            finalRecord = imgTransformProcess.executeArray( img ).reshape(1, 28 * 28);
-
-        }
-
-        String imgBase64 = Nd4jBase64.base64String(finalRecord);
-
-        //System.out.println( imgBase64 );  
-
-        System.out.println( "Finished image conversion" );
-
-        skilClientGetImageInference( imgBase64 );
+        // kick off the javaFX rendering code --> .start( Stage ) below, blocked on the skil model server round trips for { auth, inference }
+        launch();    
 
     }    
 
+    private void skilClientGetImageInference( int width, int height ) throws Exception, IOException  {
+//List<String> labels, 
+        InputStream imgStream = new URL( source_image ).openStream();
+        inputFileStream = imgStream;
 
+        imgMat = imdecode(new Mat(IOUtils.toByteArray( imgStream )), CV_LOAD_IMAGE_COLOR);
+        imageHeight = imgMat.rows();
+        imageWidth = imgMat.cols();
+        System.out.println( "Input Image: " + source_image );
+        System.out.println( "Input width: " + imageWidth );
+        System.out.println( "Input height: " + imageHeight );
 
-    private void skilClientGetImageInference( String imgBase64 ) throws Exception, IOException  {
+        NativeImageLoader imageLoader = new NativeImageLoader(608, 608, 3, new ColorConversionTransform(COLOR_BGR2RGB));
+        INDArray imgNDArrayTmp = imageLoader.asMatrix( imgMat );
+        INDArray inputFeatures = imgNDArrayTmp.permute(0, 2, 3, 1).muli(1.0 / 255.0).dup('c');
+        System.out.println( "Finished image conversion" );
 
+        String imgBase64 = Nd4jBase64.base64String( inputFeatures );
         Authorization auth = new Authorization();
         String auth_token = auth.getAuthToken( "admin", "admin" );
-
         System.out.println( "auth token: " + auth_token );
-
 
         System.out.println( "\n\n\n\nNow Sending the Classification Payload......\n\n\n" );
 
         try {
 
-//            String returnVal =
-
             JSONObject returnJSONObject = 
-                    Unirest.post( skilInferenceEndpoint + "predict" ) 
+                    Unirest.post( skilInferenceEndpoint + "predict" )
                             .header("accept", "application/json")
                             .header("Content-Type", "application/json")
                             .header( "Authorization", "Bearer " + auth_token)
@@ -230,48 +247,24 @@ public class YOLO2_TF_Client {
                             .asJson()
                             .getBody().getObject(); //.toString(); 
 
+            try {
 
-            //System.out.println( "return data: " + returnJSONObject.toString() + "\n\n" );
+                returnJSONObject.getJSONObject("prediction").getString("array");
 
-            // extract fields from the object
-//            String predict_return_array = returnJSONObject.getString("array");
-            
+            } catch (org.json.JSONException je) { 
 
-            String predict_return_array = returnJSONObject.getJSONObject("prediction").getString("array");
-
-
-            System.out.println( "classification return length: " + predict_return_array.length() );
-
-            //System.out.println( "return data: " + returnVal + "\n\n" );
-
-            INDArray networkOutput = Nd4jBase64.fromBase64( predict_return_array );
-
-
-
-
-            // TODO: before we can extract detected objects, we need to apply activation functions
-
-
-
-
-            List<DetectedObject> list_objects = getPredictedObjects( networkOutput, 0.7 );
-
-            System.out.println( "Objects found: " + list_objects.size() );
-
-//System.out.println( "return data: " + predict_return_array + "\n\n" );
-/*
-            JSONArray jsonarray = returnJSONObject.getJSONArray();
-
-//String[] names = new String[jsonArray.length()];    
-//String[] formattedNames = new String[jsonArray.length()];  
-
-            for(int i=0;i<jsonArray.length();i++)
-            {
-
-                System.out.println( "Objects found: " + jsonArray.getJSONObject(i) );
+                System.out.println( "\n\nException\n\nReturn: " + returnJSONObject );
+                return;
 
             }
-*/
+
+            String predict_return_array = returnJSONObject.getJSONObject("prediction").getString("array");
+            System.out.println( "classification return length: " + predict_return_array.length() );
+            INDArray networkOutput = Nd4jBase64.fromBase64( predict_return_array );
+
+            networkGlobalOutput = networkOutput; // hack to pass info to main thread
+
+            System.out.println( "done with SKIL calls ... " );
 
         } catch (UnirestException e) {
             e.printStackTrace();
@@ -279,153 +272,10 @@ public class YOLO2_TF_Client {
 
     }
 
-
-
-    /**
-     * Output (loss) layer for YOLOv2 object detection model, based on the papers:
-     * YOLO9000: Better, Faster, Stronger - Redmon & Farhadi (2016) - https://arxiv.org/abs/1612.08242<br>
-     * and<br>
-     * You Only Look Once: Unified, Real-Time Object Detection - Redmon et al. (2016) -
-     * http://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf<br>
-     * <br>
-     * This loss function implementation is based on the YOLOv2 version of the paper. However, note that it doesn't
-     * currently support simultaneous training on both detection and classification datasets as described in the
-     * YOlO9000 paper.<br>
-     * <br>
-     * Label format: [minibatch, 4+C, H, W]<br>
-     * Order for labels depth: [x1,y1,x2,y2,(class labels)]<br>
-     * x1 = box top left position<br>
-     * y1 = as above, y axis<br>
-     * x2 = box bottom right position<br>
-     * y2 = as above y axis<br>
-     * Note: labels are represented as a multiple of grid size - for a 13x13 grid, (0,0) is top left, (13,13) is bottom right<br>
-     * <br>
-     * Input format: [minibatch, B*(5+C), H, W]    ->      Reshape to [minibatch, B, 5+C, H, W]<br>
-     * B = number of bounding boxes (determined by config)<br>
-     * C = number of classes<br>
-     * H = output/label height<br>
-     * W = output/label width<br>
-     * <br>
-     * Note that mask arrays are not required - this implementation infers the presence or absence of objects in each grid
-     * cell from the class labels (which should be 1-hot if an object is present, or all 0s otherwise).
-     *
-     * @author Alex Black
-     */
-    private INDArray activate(INDArray input, boolean training, int numberOfBoundingBoxes) {
-        //Essentially: just apply activation functions...
-
-
-        // ---- get the base variables -------------
-        int mb = input.size(0);         // minibatch?
-        int h = input.size(2);          // output/label height
-        int w = input.size(3);          // output/label width
-        int b = numberOfBoundingBoxes; 
-        int c = (input.size(1)/b)-5;  //input.size(1) == b * (5 + C) -> C = (input.size(1)/b) - 5 // number of classes
-
-        // ---- start computing intermediate stuff -------
-        INDArray output = Nd4j.create(input.shape(), 'c');
-        INDArray output5 = output.reshape('c', mb, b, 5+c, h, w);
-        INDArray output4 = output;  //output.get(all(), interval(0,5*b), all(), all());
-        INDArray input4 = input.dup('c');    //input.get(all(), interval(0,5*b), all(), all()).dup('c');
-        INDArray input5 = input4.reshape('c', mb, b, 5+c, h, w);
-
-        //X/Y center in grid: sigmoid
-        INDArray predictedXYCenterGrid = input5.get(all(), all(), interval(0,2), all(), all());
-        Transforms.sigmoid(predictedXYCenterGrid, false);
-
-        //width/height: prior * exp(input)
-        INDArray predictedWHPreExp = input5.get(all(), all(), interval(2,4), all(), all());
-        INDArray predictedWH = Transforms.exp(predictedWHPreExp, false);
-
-// TODO: commented out due to issues w missing Broadcast entry
-//        Broadcast.mul(predictedWH, layerConf().getBoundingBoxes(), predictedWH, 1, 2);  //Box priors: [b, 2]; predictedWH: [mb, b, 2, h, w]
-
-        //Confidence - sigmoid
-        INDArray predictedConf = input5.get(all(), all(), point(4), all(), all());   //Shape: [mb, B, H, W]
-        Transforms.sigmoid(predictedConf, false);
-
-        output4.assign(input4);
-
-        //Softmax
-        //TODO OPTIMIZE?
-        INDArray inputClassesPreSoftmax = input5.get(all(), all(), interval(5, 5+c), all(), all());   //Shape: [minibatch, C, H, W]
-        INDArray classPredictionsPreSoftmax2d = inputClassesPreSoftmax.permute(0,1,3,4,2) //[minibatch, b, c, h, w] To [mb, b, h, w, c]
-                .dup('c').reshape('c', new int[]{mb*b*h*w, c});
-        Transforms.softmax(classPredictionsPreSoftmax2d, false);
-        INDArray postSoftmax5d = classPredictionsPreSoftmax2d.reshape('c', mb, b, h, w, c ).permute(0, 1, 4, 2, 3);
-
-        INDArray outputClasses = output5.get(all(), all(), interval(5, 5+c), all(), all());   //Shape: [minibatch, C, H, W]
-        outputClasses.assign(postSoftmax5d);
-
-        return output;
-    }
-
-    /*
-
-        code to parse individual bounding boxes from network output
-
-    */
-    public static List<DetectedObject> getPredictedObjects(INDArray networkOutput, double threshold){
-        if(networkOutput.rank() != 4){
-            throw new IllegalStateException("Invalid network output activations array: should be rank 4. Got array "
-                    + "with shape " + Arrays.toString(networkOutput.shape()));
-        }
-        if(threshold < 0.0 || threshold > 1.0){
-            throw new IllegalStateException("Invalid threshold: must be in range [0,1]. Got: " + threshold);
-        }
-
-        //Activations format: [mb, 5b+c, h, w]
-        int mb = networkOutput.size(0);
-        int h = networkOutput.size(1);
-        int w = networkOutput.size(2);
-        int b = 17;
-        int c = (networkOutput.size(3)/b)-5;  //input.size(1) == b * (5 + C) -> C = (input.size(1)/b) - 5
-
-        //Reshape from [minibatch, B*(5+C), H, W] to [minibatch, B, 5+C, H, W] to [minibatch, B, 5, H, W]
-        INDArray output5 = networkOutput.dup('c').reshape(mb, b, 5+c, h, w);
-        INDArray predictedConfidence = output5.get(all(), all(), point(4), all(), all());    //Shape: [mb, B, H, W]
-        INDArray softmax = output5.get(all(), all(), interval(5, 5+c), all(), all());
-
-        List<DetectedObject> out = new ArrayList<>();
-        for( int i=0; i<mb; i++ ){
-            for( int x=0; x<w; x++ ){
-                for( int y=0; y<h; y++ ){
-                    for( int box=0; box<b; box++ ){
-                        double conf = predictedConfidence.getDouble(i, box, y, x);
-                        if(conf < threshold){
-                            continue;
-                        }
-
-                        double px = output5.getDouble(i, box, 0, y, x); //Originally: in 0 to 1 in grid cell
-                        double py = output5.getDouble(i, box, 1, y, x); //Originally: in 0 to 1 in grid cell
-                        double pw = output5.getDouble(i, box, 2, y, x); //In grid units (for example, 0 to 13)
-                        double ph = output5.getDouble(i, box, 3, y, x); //In grid units (for example, 0 to 13)
-
-                        //Convert the "position in grid cell" to "position in image (in grid cell units)"
-                        px += x;
-                        py += y;
-
-
-                        INDArray sm;
-                        try (MemoryWorkspace wsO = Nd4j.getMemoryManager().scopeOutOfWorkspaces()) {
-                            sm = softmax.get(point(i), point(box), all(), point(y), point(x)).dup();
-                        }
-
-                        out.add(new DetectedObject(i, px, py, pw, ph, sm, conf));
-                    }
-                }
-            }
-        }
-
-        return out;
-    }
-
-
-
-
-
     public static void main(String[] args) throws Exception {
-        YOLO2_TF_Client m = new YOLO2_TF_Client();
+
+        // the JavaFX code initializes early, needed the image size from the image src path (yes, hack)        
+        YOLO2_TF_Client m = new YOLO2_TF_Client( args[ 1 ] );
 
         JCommander.newBuilder()
           .addObject(m)
@@ -435,8 +285,98 @@ public class YOLO2_TF_Client {
         m.run();
     }
 
+    @Override
+    public void start(Stage stage) throws Exception {
+        
+        // only because this is a separate thread and we need the info
+        InputStream imgStream = new URL( source_image ).openStream();
+        inputFileStream = imgStream;
+        imgMat = imdecode(new Mat(IOUtils.toByteArray( imgStream )), CV_LOAD_IMAGE_COLOR);
+        imageHeight = imgMat.rows();
+        imageWidth = imgMat.cols();
 
+        Canvas canvas = new Canvas(imageWidth, imageHeight);
+        GraphicsContext ctx = canvas.getGraphicsContext2D();
+        InputStream is = new URL( source_image ).openStream();
 
+        ctx.drawImage(new javafx.scene.image.Image(is, this.imageWidth, this.imageHeight, false, false), 0, 0);
+        stage.setScene(new Scene(new StackPane(canvas), this.imageWidth, this.imageHeight));
+        renderJavaFXStyle( ctx );
+        stage.setTitle("YOLO2");
+        stage.show();
+
+    }
+
+    /**
+        TODO: we're using 2 different sources of labels here, fix this
+        --- let's move to centralized colors and labels for the demo
+    */
+    private void renderJavaFXStyle(GraphicsContext ctx) throws Exception {
+
+        INDArray boundingBoxPriors = Nd4j.create(priorBoxes);
+        List<String> labels = IOUtils.readLines(new URL("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names").openStream());
+        Map<String, Paint> colors = new HashMap<>();
+        
+        for (int i = 0; i < CLASSES.length; i++) {
+            colors.put(CLASSES[i], Color.web(COLORS[i]));
+        }
+
+        ctx.setLineWidth(3);
+        ctx.setTextAlign(TextAlignment.LEFT);
+
+        long start = System.nanoTime();
+        for (int i = 0; i < 1; i++) {
+            INDArray permuted = networkGlobalOutput.permute(0, 3, 1, 2);
+            INDArray activated = YoloUtils.activate(boundingBoxPriors, permuted);
+            List<DetectedObject> predictedObjects = YoloUtils.getPredictedObjects(boundingBoxPriors, activated, 0.6, 0.4);
+            
+            System.out.println( "width: " + imageWidth );
+            System.out.println( "height: " + imageHeight );
+
+            for (DetectedObject o : predictedObjects) {
+                String label = labels.get(o.getPredictedClass());
+                long x = Math.round(imageWidth  * o.getCenterX() / gridWidth);
+                long y = Math.round(imageHeight * o.getCenterY() / gridHeight);
+                long w = Math.round(imageWidth  * o.getWidth()   / gridWidth);
+                long h = Math.round(imageHeight * o.getHeight()  / gridHeight);
+
+                System.out.println("\"" + label + "\" at [" + x + "," + y + ";" + w + "," + h + "], conf = " + o.getConfidence());
+
+                double[] xy1 = o.getTopLeftXY();
+                double[] xy2 = o.getBottomRightXY();
+                int x1 = (int) Math.round(imageWidth  * xy1[0] / gridWidth);
+                int y1 = (int) Math.round(imageHeight * xy1[1] / gridHeight);
+                int x2 = (int) Math.round(imageWidth  * xy2[0] / gridWidth);
+                int y2 = (int) Math.round(imageHeight * xy2[1] / gridHeight);
+
+                int rectW = x2 - x1;
+                int rectH = y2 - y1;
+                System.out.printf("%s - %d, %d, %d, %d \n", label, x1, x2, y1, y2);
+                System.out.println( "color: " + colors.get(label) );
+                ctx.setStroke(colors.get(label));
+                ctx.strokeRect(x1, y1, rectW, rectH);
+                
+                int labelWidth = label.length() * 10;
+                int labelHeight = 14;
+                
+                ctx.setFill( colors.get(label) );
+                ctx.strokeRect(x1, y1-labelHeight, labelWidth, labelHeight);
+                ctx.fillRect(x1, y1 - labelHeight, labelWidth, labelHeight);
+                ctx.setFill( Color.WHITE );
+                ctx.fillText(label, x1 + 3, y1 - 3 );
+
+            }
+
+        }
+
+        long end = System.nanoTime();
+        System.out.println((end - start) / 1000000 + " ms");
+
+    }
+
+    /**
+        Simple helper class to encapsulate some of the raw REST code for making basic authentication calls
+    */
     private class Authorization {
 
         private String host;

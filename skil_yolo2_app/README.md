@@ -18,22 +18,50 @@ You can get SKIL as either an [RPM package](https://docs.skymind.ai/v1.0.2/docs/
 
 
 
-# Downloading the YOLO2 Tensor Flow Model
+# Working with the YOLO Model
 
-Tensor Flow Model Used
+YOLO is a deep network for real-time object detection and classification. 
+Paper: 
+* [version 1](https://arxiv.org/pdf/1506.02640.pdf)
+* [version 2](https://arxiv.org/pdf/1612.08242.pdf)
 
-This is the official website listed with the yolo900 paper 
+As described in the first paper:
+
+> We pretrain our convolutional layers on the ImageNet
+> 1000-class competition dataset [30]. For pretraining we use
+> the first 20 convolutional layers from Figure 3 followed by a
+> average-pooling layer and a fully connected layer. We train
+> this network for approximately a week and achieve a single
+> crop top-5 accuracy of 88% on the ImageNet 2012 validation
+> set, comparable to the GoogLeNet models in Caffe’s
+> Model Zoo [24]. We use the Darknet framework for all
+> training and inference [26].
+
+Which references the darknet framework as:
+
+> [26] J. Redmon. Darknet: Open source neural networks in c.
+> http://pjreddie.com/darknet/, 2013–2016. 3
+
+
+## Leveraging the Darknet Framework to Extract the TensorFlow Model
+
+We used the Darknet variant of the yolo2 model. The official website listed for the yolo900 paper:
 
 https://pjreddie.com/darknet/yolo/
 
-The weights are from here and are listed under YOLOv2 608x608
+The github repo for the darkflow yolo model is at:
 
+https://github.com/pjreddie/darknet
+
+* The weights are from here and are listed under YOLOv2 608x608
+
+
+
+## Specific Steps for Model Conversion
 
 This repo converts it from darknet to TF and has instructions on how to get the single pb file aka the frozen graph
 
 https://github.com/thtrieu/darkflow
-
-## Specific Steps for Model Conversion
 
 
 # Import the .pb File into the SKIL Model Server
@@ -67,3 +95,10 @@ java -jar ./target/skil-example-yolo2-tf-1.0.0.jar --input https://raw.githubuse
 where --input can be any input image you choose, and the --endpoint parameter is the endpoint you create when you import the TF .pb file.
 
 The jar can also take local file:// input as well.
+
+# Reference Material on the YOLO Family of Networks
+
+* Understanding bounding box mechanics in object detection (aka “understanding YOLO output)
+   * http://christopher5106.github.io/object/detectors/2017/08/10/bounding-box-object-detectors-understanding-yolo.html
+
+

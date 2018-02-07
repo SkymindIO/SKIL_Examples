@@ -9,9 +9,12 @@ This example is meant to show off raw TF model import into SKIL 1.0.2
 * Import the model into the SKIL Model Server
 * Run the YOLO2 Client from the local command line
 
-#Get SKIL 1.0.2
+# Get SKIL 1.0.2
 
-[ here ]
+Check out SKIL over at: [https://skymind.ai/platform](https://skymind.ai/platform)
+
+You can get SKIL as either an [RPM package](https://docs.skymind.ai/v1.0.2/docs/packages) or a [Docker Image](https://docs.skymind.ai/v1.0.2/docs/docker-image) from the [downloads page](https://docs.skymind.ai/v1.0.2/docs/download)
+
 
 
 

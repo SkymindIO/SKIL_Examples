@@ -45,21 +45,20 @@ Which references the darknet framework as:
 
 ## Leveraging the Darknet Framework to Extract the TensorFlow Model
 
-We used the Darknet variant of the yolo2 model. The official website listed for the yolo900 paper:
-
-https://pjreddie.com/darknet/yolo/
-
-The github repo for the darkflow yolo model is at:
-
-https://github.com/pjreddie/darknet
-
-* The weights are from here and are listed under YOLOv2 608x608
-
+* The official website listed for the yolo9000 paper:
+   * https://pjreddie.com/darknet/yolo/
+* The github repo for the darknet framework:
+   * https://github.com/pjreddie/darknet
+* Specific YOLO model weights in darknet format:
+   * https://pjreddie.com/darknet/yolo/
+   * The weights are from here and are listed under YOLOv2 608x608
+      * https://pjreddie.com/media/files/yolo.weights
+      * [cfg](https://github.com/pjreddie/darknet/blob/master/cfg/yolo.cfg)
 
 
 ## Specific Steps for Model Conversion
 
-This repo converts it from darknet to TF and has instructions on how to get the single pb file aka the frozen graph
+Now that we have This repo converts it from darknet to TF and has instructions on how to get the single pb file aka the frozen graph
 
 https://github.com/thtrieu/darkflow
 

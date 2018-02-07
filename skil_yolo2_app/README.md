@@ -69,10 +69,15 @@ Now that we have the darknet-format yolo model we need to convert it to the Tens
 
 https://github.com/thtrieu/darkflow
 
+Skip down to the section on ["Saving the built graph to a protobuff file"](https://github.com/thtrieu/darkflow#save-the-built-graph-to-a-protobuf-file-pb) and check out the specific commands on how to get darknet to save to the TensorFlow format.
+
+As noted in their docs, the name of input tensor and output tensor (e.g., "placeholders") are respectively 'input' and 'output'. For more information on how to use protobuf files, check out the official [docs of Tensorflow on C++ API](https://www.tensorflow.org/api_docs/cc/). 
+
 
 # Import the .pb File into the SKIL Model Server
 
-[ stuff ]
+Now we can log into SKIL and import the .pb file we created in the previous step.
+
 * log into SKIL
 * select the "deployments" option on the left side toolbar
 * click on the "New Deployment" button

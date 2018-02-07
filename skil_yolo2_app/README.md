@@ -1,6 +1,10 @@
-# YOLO2 Demo on SKIL
+# Object Detection with YOLO2 Demo on SKIL
 
-This example is meant to show off raw TF model import into SKIL 1.0.2
+This example is meant to show off raw TF model import into SKIL 1.0.2. We've chosen object detection in computer vision as the application we want to demo in the context of Tensor Flow model import on SKIL. For the purposes of demoing computer vision on SKIL, we'll use a YOLO network for object deteciton as the application. The original YOLO2 model is in the darknet framework format, but fortunately we have a way of converting this format to the tensor flow format.
+
+The purpose of this demo on SKIL is two-fold:
+1. show off the native TensorFlow model import capabilities of the SKIL platform
+2. show off a live real-world computer vision object detection demo on the SKIL platform
 
 
 ## Demo Workflow
@@ -45,6 +49,8 @@ Which references the darknet framework as:
 
 ## Leveraging the Darknet Framework to Extract the TensorFlow Model
 
+So for this demo we want a TensorFlow model to import into SKIL. For the purposes of demoing computer vision on SKIL, we'll use a YOLO network for object deteciton as the application. The original YOLO2 model is in the darknet framework format, but fortunately we have a way of converting this format to the tensor flow format.
+
 * The official website listed for the yolo9000 paper:
    * https://pjreddie.com/darknet/yolo/
 * The github repo for the darknet framework:
@@ -52,13 +58,14 @@ Which references the darknet framework as:
 * Specific YOLO model weights in darknet format:
    * https://pjreddie.com/darknet/yolo/
    * The weights are from here and are listed under YOLOv2 608x608
-      * https://pjreddie.com/media/files/yolo.weights
+      * [weights](https://pjreddie.com/media/files/yolo.weights)
       * [cfg](https://github.com/pjreddie/darknet/blob/master/cfg/yolo.cfg)
 
+Now that we know where to get the darknet-format yolo model, let's move on to converting it to the TensorFlow format.
 
 ## Specific Steps for Model Conversion
 
-Now that we have This repo converts it from darknet to TF and has instructions on how to get the single pb file aka the frozen graph
+Now that we have the darknet-format yolo model we need to convert it to the TensorFlow format. The repo linked below converts the darknet-format model from darknet to TensorFlow. The repo has instructions on how to get the single pb file aka the frozen graph.
 
 https://github.com/thtrieu/darkflow
 

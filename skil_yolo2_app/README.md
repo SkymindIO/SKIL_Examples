@@ -1,9 +1,9 @@
-#YOLO2 Demo on SKIL
+# YOLO2 Demo on SKIL
 
 This example is meant to show off raw TF model import into SKIL 1.0.2
 
 
-##Demo Workflow
+## Demo Workflow
 * Start up SKIL 1.0.2
 * Download and convert the YOLO2 Model to the .pb TensorFlow format
 * Import the model into the SKIL Model Server
@@ -15,7 +15,7 @@ This example is meant to show off raw TF model import into SKIL 1.0.2
 
 
 
-#Downloading the YOLO2 Tensor Flow Model
+# Downloading the YOLO2 Tensor Flow Model
 
 Tensor Flow Model Used
 
@@ -30,10 +30,10 @@ This repo converts it from darknet to TF and has instructions on how to get the 
 
 https://github.com/thtrieu/darkflow
 
-##Specific Steps for Model Conversion
+## Specific Steps for Model Conversion
 
 
-#Import the .pb File into the SKIL Model Server
+# Import the .pb File into the SKIL Model Server
 
 [ stuff ]
 * log into SKIL
@@ -47,7 +47,7 @@ https://github.com/thtrieu/darkflow
 * click the "start" button on the endpoint
 
 
-#Run the SKIL Client Locally
+# Run the SKIL Client Locally
 
 clone this repo with the command:
 ```

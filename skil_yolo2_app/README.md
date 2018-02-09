@@ -104,13 +104,19 @@ This will build a jar named "skil-example-yolo2-tf-1.0.0.jar" in the ./target su
 
 Now that we have a client application jar, we can run the yolo2 client jar from the command line:
 ```
-java -jar ./target/skil-example-yolo2-tf-1.0.0.jar --input https://raw.githubusercontent.com/tejaslodaya/car-detection-yolo/master/images/0012.jpg --endpoint http://localhost:9008/endpoints/tf2/model/yolo/default/
+java -jar ./target/skil-example-yolo2-tf-1.0.0.jar --input [image URI] --endpoint [SKIL Endpoint URI]
 ```
+
 where 
 
 * `--input` can be any input image you choose (local file with the file:// prefix, or an image file via an internet URI with a http:// prefix)
 * `--endpoint` parameter is the endpoint you create when you import the TF .pb file
 
+An example of this command in usage would be:
+
+```
+java -jar ./target/skil-example-yolo2-tf-1.0.0.jar --input https://raw.githubusercontent.com/tejaslodaya/car-detection-yolo/master/images/0012.jpg --endpoint http://localhost:9008/endpoints/tf2/model/yolo/default/
+```
 
 
 # Reference Material on the YOLO Family of Networks

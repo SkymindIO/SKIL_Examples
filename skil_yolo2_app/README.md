@@ -93,19 +93,25 @@ Now we can log into SKIL and import the .pb file we created in the previous step
 
 clone this repo with the command:
 ```
-git clone [ here ]
+git clone git@github.com:SkymindIO/SKIL_Examples.git
 ```
 build the jar:
 ```
+cd skil_yolo2_app/client_app
 mvn package
 ```
-now run the jar from the command line:
+This will build a jar named "skil-example-yolo2-tf-1.0.0.jar" in the ./target subdirectory of the client_app/ subdirectory.
 
+Now that we have a client application jar, we can run the yolo2 client jar from the command line:
+```
 java -jar ./target/skil-example-yolo2-tf-1.0.0.jar --input https://raw.githubusercontent.com/tejaslodaya/car-detection-yolo/master/images/0012.jpg --endpoint http://localhost:9008/endpoints/tf2/model/yolo/default/
+```
+where 
 
-where --input can be any input image you choose, and the --endpoint parameter is the endpoint you create when you import the TF .pb file.
+* `--input` can be any input image you choose (local file with the file:// prefix, or an image file via an internet URI with a http:// prefix)
+* `--endpoint` parameter is the endpoint you create when you import the TF .pb file
 
-The jar can also take local file:// input as well.
+
 
 # Reference Material on the YOLO Family of Networks
 

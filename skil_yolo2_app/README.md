@@ -59,7 +59,7 @@ Both papers reference the darknet framework as:
 > [26] J. Redmon. Darknet: Open source neural networks in c.
 > http://pjreddie.com/darknet/, 2013–2016. 3
 
-This specific model [setup](https://github.com/pjreddie/darknet/blob/master/cfg/yolo.cfg) is based on the YOLOv2 architecture was trained on the [COCO dataset](http://cocodataset.org/#home) and can recognize [80 distinct classes](https://github.com/pjreddie/darknet/blob/master/data/coco.names).
+The specific version of the YOLO model [setup](https://github.com/pjreddie/darknet/blob/master/cfg/yolo.cfg) we use in this example is based on the YOLOv2 architecture was trained on the [COCO dataset](http://cocodataset.org/#home) and can recognize [80 distinct classes](https://github.com/pjreddie/darknet/blob/master/data/coco.names).
 
 ## Leveraging the Darknet Framework to Extract the TensorFlow Model
 
@@ -99,15 +99,15 @@ As noted in their docs, the name of input tensor and output tensor (e.g., "place
 
 Now we can log into SKIL and import the TensorFlow protobuff (.pb) file we created in the previous step.
 
-* log into SKIL
-* select the "deployments" option on the left side toolbar
-* click on the "New Deployment" button
-* in the models section of the newly created deployment screen, select "Import" and locate the .pb file we created previously
+* Log into SKIL
+* Select the "deployments" option on the left side toolbar
+* Click on the "New Deployment" button
+* In the models section of the newly created deployment screen, select "Import" and locate the .pb file we created previously
 * For the placeholders options:
    * Names of the Input Placeholders: "input" (make sure to press 'enter' after you enter the name)
    * Names of the Output Placeholders: "output" (also make sure to press 'enter' after you enter the name)
-* click on "Import Model" 
-* click the "start" button on the endpoint
+* Click on "Import Model" 
+* Click the "start" button on the endpoint
 
 It will take a few seconds for the page to report that the endpoint has successfully started. Once the page lists the endpoint as running, however, you will have access to the model from the listed endpoint on the page. The endpoint URI will look something like:
 

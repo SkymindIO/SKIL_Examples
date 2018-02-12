@@ -43,12 +43,23 @@ As described in the first paper:
 > Model Zoo [24]. We use the Darknet framework for all
 > training and inference [26].
 
-Which references the darknet framework as:
+In the second paper the authors go on to state further accuracy improvements:
+
+> The improved model, YOLOv2, is state-of-the-art on
+> standard detection tasks like PASCAL VOC and COCO. Using
+> a novel, multi-scale training method the same YOLOv2
+> model can run at varying sizes, offering an easy tradeoff
+> between speed and accuracy. At 67 FPS, YOLOv2 gets
+> 76.8 mAP on VOC 2007. At 40 FPS, YOLOv2 gets 78.6
+> mAP, outperforming state-of-the-art methods like Faster RCNN
+> with ResNet and SSD while still running significantly faster
+
+Both papers reference the darknet framework as:
 
 > [26] J. Redmon. Darknet: Open source neural networks in c.
 > http://pjreddie.com/darknet/, 2013–2016. 3
 
-This specific model [setup](https://github.com/pjreddie/darknet/blob/master/cfg/yolo.cfg) was trained on the [COCO dataset](http://cocodataset.org/#home) and can recognize [80 distinct classes](https://github.com/pjreddie/darknet/blob/master/data/coco.names).
+This specific model [setup](https://github.com/pjreddie/darknet/blob/master/cfg/yolo.cfg) is based on the YOLOv2 architecture was trained on the [COCO dataset](http://cocodataset.org/#home) and can recognize [80 distinct classes](https://github.com/pjreddie/darknet/blob/master/data/coco.names).
 
 ## Leveraging the Darknet Framework to Extract the TensorFlow Model
 

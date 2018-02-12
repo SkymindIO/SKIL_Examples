@@ -69,15 +69,19 @@ Now that we have the darknet-format yolo model we need to convert it to the Tens
 
 https://github.com/thtrieu/darkflow
 
-Skip down to the section on ["Saving the built graph to a protobuff file"](https://github.com/thtrieu/darkflow#save-the-built-graph-to-a-protobuf-file-pb) and check out the specific commands on how to get darknet to save to the TensorFlow format.
-
-As noted in their docs, the name of input tensor and output tensor (e.g., "placeholders") are respectively 'input' and 'output'. For more information on how to use protobuf files, check out the official [docs of Tensorflow on C++ API](https://www.tensorflow.org/api_docs/cc/). 
-
-### Model Conversion is a Lot of Work
+---
+** Model Conversion is a Lot of Work **
 
 It's a lot easier if you use the one we already converted to the TensorFlow format for you:
 
 [yolo pb file](https://github.com/deeplearning4j/dl4j-test-resources/blob/master/src/main/resources/tf_graphs/examples/yolov2_608x608/frozen_model.pb)
+
+---
+
+Skip down to the section on ["Saving the built graph to a protobuff file"](https://github.com/thtrieu/darkflow#save-the-built-graph-to-a-protobuf-file-pb) and check out the specific commands on how to get darknet to save to the TensorFlow format.
+
+As noted in their docs, the name of input tensor and output tensor (e.g., "placeholders") are respectively 'input' and 'output'. For more information on how to use protobuf files, check out the official [docs of Tensorflow on C++ API](https://www.tensorflow.org/api_docs/cc/). 
+
 
 
 # Import the .pb File into the SKIL Model Server

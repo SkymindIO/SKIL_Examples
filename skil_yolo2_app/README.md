@@ -95,9 +95,9 @@ As noted in their docs, the name of input tensor and output tensor (e.g., "place
 
 
 
-# Import the .pb File into the SKIL Model Server
+# Import the TensorFlow Protobuff File into the SKIL Model Server
 
-Now we can log into SKIL and import the .pb file we created in the previous step.
+Now we can log into SKIL and import the TensorFlow protobuff (.pb) file we created in the previous step.
 
 * log into SKIL
 * select the "deployments" option on the left side toolbar
@@ -109,10 +109,15 @@ Now we can log into SKIL and import the .pb file we created in the previous step
 * click on "Import Model" 
 * click the "start" button on the endpoint
 
+It will take a few seconds for the page to report that the endpoint has successfully started. Once the page lists the endpoint as running, however, you will have access to the model from the listed endpoint on the page. The endpoint URI will look something like:
 
-# Run the SKIL Client Locally
+http://localhost:9008/endpoints/tf2/model/yolo/default/
 
-clone this repo with the command:
+Now we need a client application to query this endpoint and get object detection predictions.
+
+# Run the SKIL Client Locally with the Sample Client Application
+
+Clone this repo with the command to get the included YOLOv2 sample application that will retrive predictions and render the bounding boxes locally:
 ```
 git clone git@github.com:SkymindIO/SKIL_Examples.git
 ```

@@ -48,6 +48,7 @@ Which references the darknet framework as:
 > [26] J. Redmon. Darknet: Open source neural networks in c.
 > http://pjreddie.com/darknet/, 2013–2016. 3
 
+This specific model [setup](https://github.com/pjreddie/darknet/blob/master/cfg/yolo.cfg) was trained on the [COCO dataset](http://cocodataset.org/#home) and can recognize [80 distinct classes](https://github.com/pjreddie/darknet/blob/master/data/coco.names).
 
 ## Leveraging the Darknet Framework to Extract the TensorFlow Model
 

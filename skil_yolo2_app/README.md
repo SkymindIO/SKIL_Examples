@@ -71,11 +71,8 @@ https://github.com/thtrieu/darkflow
 
 ---
 > ### Model Conversion is a Lot of Work 
-
 > It's a lot easier if you use the one we already converted to the TensorFlow format for you:
-
 > [yolo pb file](https://github.com/deeplearning4j/dl4j-test-resources/blob/master/src/main/resources/tf_graphs/examples/yolov2_608x608/frozen_model.pb)
-
 ---
 
 Skip down to the section on ["Saving the built graph to a protobuff file"](https://github.com/thtrieu/darkflow#save-the-built-graph-to-a-protobuf-file-pb) and check out the specific commands on how to get darknet to save to the TensorFlow format.

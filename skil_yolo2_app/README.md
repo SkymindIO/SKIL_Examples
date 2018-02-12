@@ -24,6 +24,8 @@ You can get SKIL as either an [RPM package](https://docs.skymind.ai/v1.0.2/docs/
 
 # Working with the YOLO Model
 
+![alt text](https://pjreddie.com/media/image/model2.png "Image Courtesy of YOLO Website")
+
 YOLO is a deep network for real-time object detection and classification. 
 Paper: 
 * [version 1](https://arxiv.org/pdf/1506.02640.pdf)

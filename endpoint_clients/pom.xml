@@ -15,6 +15,14 @@
         <nd4j.version>0.9.1</nd4j.version>
         <main.class>ai.skymind.skil.examples.endpoints.Main</main.class>
     </properties>
+         
+    <repositories>
+        <repository>
+            <id>skymind-nexus</id>
+            <name>Skymind.ai SKIL Nexus Repo</name>
+            <url>https://nexus.skymind.io/repository/skil</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <!-- SKIL Dependencies -->

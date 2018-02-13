@@ -145,20 +145,27 @@ import javafx.stage.Stage;
 */
 public class YOLO2_TF_Client extends Application {
 
-    public static final int nClasses = 80;
+    //public static final int nClasses = 80;
     public static final int gridWidth = 19;
     public static final int gridHeight = 19;
     public static final double[][] priorBoxes = {{0.57273, 0.677385}, {1.87446, 2.06253}, {3.33843, 5.47434}, {7.88282, 3.52778}, {9.77052, 9.16828}};
-
+/*
     private static final String[] CLASSES = { "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
             "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa",
             "train", "tvmonitor", "truck", "traffic light" };
-
-    private static final String[] COLORS = { "#6793be", "#990000", "#fececf", "#ffbcc9", "#ffb9c7", "#fdc6d1",
+*/
+    private static final String[] COLORS = { 
+            "#6793be", "#990000", "#fececf", "#ffbcc9", "#ffb9c7", "#fdc6d1",
             "#fdc9d3", "#6793be", "#73a4d4", "#9abde0", "#9abde0", "#8fff8f", "#ffcfd8", "#808080", "#808080",
             "#ffba00", "#6699ff", "#009933", "#1c1c1c", "#08375f", "#116ebf", "#e61d35", "#106bff", "#8f8fff",
             "#8fff8f", "#dbdbff", "#dbffdb", "#dbffff", "#ffdbdb", "#ffc2c2", "#ffa8a8", "#ff8f8f", "#e85e68",
-            "#123456", "#5cd38c", "#1d1f5f", "#4e4b04", "#495a5b", "#489d73", "#9d4872", "#d49ea6", "#ff0080" };
+            "#123456", "#5cd38c", "#1d1f5f", "#4e4b04", "#495a5b", "#489d73", "#9d4872", "#d49ea6", "#ff0080",
+            "#6793be", "#990000", "#fececf", "#ffbcc9", "#ffb9c7", "#fdc6d1",
+            "#fdc9d3", "#6793be", "#73a4d4", "#9abde0", "#9abde0", "#8fff8f", "#ffcfd8", "#808080", "#808080",
+            "#ffba00", "#6699ff", "#009933", "#1c1c1c", "#08375f", "#116ebf", "#e61d35", "#106bff", "#8f8fff",
+            "#8fff8f", "#dbdbff", "#dbffdb", "#dbffff", "#ffdbdb", "#ffc2c2", "#ffa8a8", "#ff8f8f", "#e85e68",
+            "#123456", "#5cd38c", "#1d1f5f", "#4e4b04", "#495a5b", "#489d73", "#9d4872", "#d49ea6", "#ff0080" 
+        };
 
     @Parameter(names="--endpoint", description="Endpoint for classification", required=true)
     private String skilInferenceEndpoint = ""; // EXAMPLE: "http://localhost:9008/endpoints/mnist/model/mnistmodel/default/";
@@ -316,10 +323,15 @@ public class YOLO2_TF_Client extends Application {
         INDArray boundingBoxPriors = Nd4j.create(priorBoxes);
         List<String> labels = IOUtils.readLines(new URL("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names").openStream());
         Map<String, Paint> colors = new HashMap<>();
-        
+        /*
         for (int i = 0; i < CLASSES.length; i++) {
             colors.put(CLASSES[i], Color.web(COLORS[i]));
         }
+*/
+        for (int i = 0; i < labels.size(); i++) {
+            colors.put( labels.get( i ), Color.web( COLORS[i] ) );
+        }
+
 
         ctx.setLineWidth(3);
         ctx.setTextAlign(TextAlignment.LEFT);

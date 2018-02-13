@@ -61,8 +61,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,6 +113,9 @@ import javafx.scene.paint.Paint;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 /**
 
@@ -205,6 +209,14 @@ public class YOLO2_TF_Client extends Application {
 
 */
     public void run() throws Exception, IOException {
+
+Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.net.http"));
+    
+    for(String log:loggers) { 
+    Logger logger = (Logger)LoggerFactory.getLogger(log);
+    logger.setLevel(Level.INFO);
+    logger.setAdditive(false);
+    }
 
         //List<String> labels = IOUtils.readLines(new URL("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names").openStream());
 

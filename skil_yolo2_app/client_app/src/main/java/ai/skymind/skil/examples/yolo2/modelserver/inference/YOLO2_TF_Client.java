@@ -58,30 +58,32 @@ import org.json.JSONArray;
 
 import java.text.MessageFormat;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+//import java.util.ArrayList;
+//import java.util.Arrays;
+//import java.util.List;
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+/*
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+*/
 import java.util.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+//import java.util.Iterator;
+//import java.util.List;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
+//import java.util.List;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -153,11 +155,6 @@ public class YOLO2_TF_Client extends Application {
     public static final int gridWidth = 19;
     public static final int gridHeight = 19;
     public static final double[][] priorBoxes = {{0.57273, 0.677385}, {1.87446, 2.06253}, {3.33843, 5.47434}, {7.88282, 3.52778}, {9.77052, 9.16828}};
-/*
-    private static final String[] CLASSES = { "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat",
-            "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa",
-            "train", "tvmonitor", "truck", "traffic light" };
-*/
     private static final String[] COLORS = { 
             "#6793be", "#990000", "#fececf", "#ffbcc9", "#ffb9c7", "#fdc6d1",
             "#fdc9d3", "#6793be", "#73a4d4", "#9abde0", "#9abde0", "#8fff8f", "#ffcfd8", "#808080", "#808080",
@@ -170,6 +167,8 @@ public class YOLO2_TF_Client extends Application {
             "#8fff8f", "#dbdbff", "#dbffdb", "#dbffff", "#ffdbdb", "#ffc2c2", "#ffa8a8", "#ff8f8f", "#e85e68",
             "#123456", "#5cd38c", "#1d1f5f", "#4e4b04", "#495a5b", "#489d73", "#9d4872", "#d49ea6", "#ff0080" 
         };
+    private static long globalStartTime = 0;
+    private static long globalEndTime = 0;
 
     @Parameter(names="--endpoint", description="Endpoint for classification", required=true)
     private String skilInferenceEndpoint = ""; // EXAMPLE: "http://localhost:9008/endpoints/mnist/model/mnistmodel/default/";
@@ -210,15 +209,15 @@ public class YOLO2_TF_Client extends Application {
 */
     public void run() throws Exception, IOException {
 
-Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.net.http"));
+        Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.net.http", "org.reflections.Reflections"));
     
-    for(String log:loggers) { 
-    Logger logger = (Logger)LoggerFactory.getLogger(log);
-    logger.setLevel(Level.INFO);
-    logger.setAdditive(false);
-    }
+        for (String log : loggers) { 
+            Logger logger = (Logger)LoggerFactory.getLogger(log);
+            logger.setLevel(Level.INFO);
+            logger.setAdditive(false);
+        }
 
-        //List<String> labels = IOUtils.readLines(new URL("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names").openStream());
+        globalStartTime = System.nanoTime();
 
         // make model server network calls for { auth, inference }
         skilClientGetImageInference( imageWidth, imageHeight );
@@ -229,7 +228,6 @@ Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.ne
     }    
 
     private void skilClientGetImageInference( int width, int height ) throws Exception, IOException  {
-//List<String> labels, 
         InputStream imgStream = new URL( source_image ).openStream();
         inputFileStream = imgStream;
 
@@ -243,15 +241,19 @@ Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.ne
         NativeImageLoader imageLoader = new NativeImageLoader(608, 608, 3, new ColorConversionTransform(COLOR_BGR2RGB));
         INDArray imgNDArrayTmp = imageLoader.asMatrix( imgMat );
         INDArray inputFeatures = imgNDArrayTmp.permute(0, 2, 3, 1).muli(1.0 / 255.0).dup('c');
-        System.out.println( "Finished image conversion" );
 
         String imgBase64 = Nd4jBase64.base64String( inputFeatures );
         Authorization auth = new Authorization();
+        long start = System.nanoTime();
         String auth_token = auth.getAuthToken( "admin", "admin" );
-        System.out.println( "auth token: " + auth_token );
+        long end = System.nanoTime();
+        System.out.println("Getting the auth token took: " + (end - start) / 1000000 + " ms");
 
-        System.out.println( "\n\n\n\nNow Sending the Classification Payload......\n\n\n" );
 
+        //System.out.println( "auth token: " + auth_token );
+
+        System.out.println( "Sending the Classification Payload..." );
+        start = System.nanoTime();
         try {
 
             JSONObject returnJSONObject = 
@@ -277,13 +279,15 @@ Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.ne
 
             }
 
+            end = System.nanoTime();
+            System.out.println("SKIL inference REST round trip took: " + (end - start) / 1000000 + " ms");
+
+
             String predict_return_array = returnJSONObject.getJSONObject("prediction").getString("array");
-            System.out.println( "classification return length: " + predict_return_array.length() );
+            System.out.println( "REST payload return length: " + predict_return_array.length() );
             INDArray networkOutput = Nd4jBase64.fromBase64( predict_return_array );
 
             networkGlobalOutput = networkOutput; // hack to pass info to main thread
-
-            System.out.println( "done with SKIL calls ... " );
 
         } catch (UnirestException e) {
             e.printStackTrace();
@@ -333,13 +337,14 @@ Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.ne
     private void renderJavaFXStyle(GraphicsContext ctx) throws Exception {
 
         INDArray boundingBoxPriors = Nd4j.create(priorBoxes);
+        long start = System.nanoTime();
         List<String> labels = IOUtils.readLines(new URL("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names").openStream());
+        long end = System.nanoTime();
+        System.out.println("Retrieving labels took: " + (end - start) / 1000000 + " ms");
+
+
         Map<String, Paint> colors = new HashMap<>();
-        /*
-        for (int i = 0; i < CLASSES.length; i++) {
-            colors.put(CLASSES[i], Color.web(COLORS[i]));
-        }
-*/
+
         for (int i = 0; i < labels.size(); i++) {
             colors.put( labels.get( i ), Color.web( COLORS[i] ) );
         }
@@ -348,14 +353,14 @@ Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.ne
         ctx.setLineWidth(3);
         ctx.setTextAlign(TextAlignment.LEFT);
 
-        long start = System.nanoTime();
+        start = System.nanoTime();
         for (int i = 0; i < 1; i++) {
             INDArray permuted = networkGlobalOutput.permute(0, 3, 1, 2);
             INDArray activated = YoloUtils.activate(boundingBoxPriors, permuted);
             List<DetectedObject> predictedObjects = YoloUtils.getPredictedObjects(boundingBoxPriors, activated, 0.6, 0.4);
             
-            System.out.println( "width: " + imageWidth );
-            System.out.println( "height: " + imageHeight );
+            //System.out.println( "width: " + imageWidth );
+            //System.out.println( "height: " + imageHeight );
 
             for (DetectedObject o : predictedObjects) {
                 String label = labels.get(o.getPredictedClass());
@@ -375,8 +380,8 @@ Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.ne
 
                 int rectW = x2 - x1;
                 int rectH = y2 - y1;
-                System.out.printf("%s - %d, %d, %d, %d \n", label, x1, x2, y1, y2);
-                System.out.println( "color: " + colors.get(label) );
+                //System.out.printf("%s - %d, %d, %d, %d \n", label, x1, x2, y1, y2);
+                //System.out.println( "color: " + colors.get(label) );
                 ctx.setStroke(colors.get(label));
                 ctx.strokeRect(x1, y1, rectW, rectH);
                 
@@ -393,8 +398,11 @@ Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.ne
 
         }
 
-        long end = System.nanoTime();
-        System.out.println((end - start) / 1000000 + " ms");
+        globalEndTime = System.nanoTime();
+        end = System.nanoTime();
+        System.out.println("Rendering code took: " + (end - start) / 1000000 + " ms");
+
+        System.out.println("Overall Program Time: " + (globalEndTime - globalStartTime) / 1000000 + " ms");
 
     }
 

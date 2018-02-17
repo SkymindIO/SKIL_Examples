@@ -3,8 +3,7 @@ public class SKILRequester {
     private class TransformResponse { public String ndarray; }
     private class PredictResponse { public Integer[] results; public Decimal[] probabilities; }
     
-    //private static String HOST = 'http://egskil1.southcentralus.cloudapp.azure.com:9008';
-    private static String SKIL_HOST = 'http://skildemo1.southcentralus.cloudapp.azure.com:9008';
+    private static String SKIL_HOST = '<skil_host_address>:9008';
     
     @AuraEnabled
     public static String predict(Id recordId) {
@@ -55,7 +54,7 @@ public class SKILRequester {
     
     private static String transform(String auth, Decimal amount, Decimal prob, Decimal expectedRevenue, String type, String lead, Integer quarter) {
         HttpRequest req = new HttpRequest();
-        req.setEndpoint(SKIL_HOST + '/endpoints/demos/datavec/smartprobt/default/transformincrementalarray');
+        req.setEndpoint(SKIL_HOST + '/endpoints/demos/datavec/smartprobtransform/default/transformincrementalarray');
         req.setMethod('POST');
         
         if (type == null) {

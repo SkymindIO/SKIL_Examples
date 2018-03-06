@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: ai.skymind.skil.examples.clinical_lstm.modelserver.inferen
+ ce.ClinicalModelServerInferenceExample
+

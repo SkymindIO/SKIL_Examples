@@ -141,6 +141,16 @@ An example of this command in usage would be:
 java -jar ./target/skil-example-yolo2-tf-1.0.0.jar --input https://raw.githubusercontent.com/tejaslodaya/car-detection-yolo/master/images/0012.jpg --endpoint http://localhost:9008/endpoints/tf2/model/yolo/default/
 ```
 
+Alternatively, we can grab pictures from a webcam:
+
+```
+java -jar ./target/skil-example-yolo2-tf-1.0.0.jar --camera 0 --endpoint http://localhost:9008/endpoints/tf2/model/yolo/default/
+```
+
+where 
+
+* `--camera` can be any camera device number starting from 0
+
 
 # Reference Material on the YOLO Family of Networks
 

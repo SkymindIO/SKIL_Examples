@@ -76,19 +76,14 @@
         </dependency>
 -->
 
-<!-- https://mvnrepository.com/artifact/org.bytedeco/javacv -->
-<dependency>
-    <groupId>org.bytedeco</groupId>
-    <artifactId>javacv</artifactId>
-    <version>1.4</version>
-</dependency>
-
-
-
-
         <dependency>
             <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-nn</artifactId>
+            <artifactId>deeplearning4j-core</artifactId>
+            <version>${dl4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
+            <artifactId>deeplearning4j-zoo</artifactId>
             <version>${dl4j.version}</version>
         </dependency>
 <!--
@@ -143,18 +138,11 @@
             <version>${datavec.version}</version>
         </dependency>
 
-
-
-          <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacv-platform</artifactId>
-            <version>1.4</version>
-          </dependency>
-
-
-
-
-
+        <dependency>
+          <groupId>org.bytedeco</groupId>
+          <artifactId>javacv-platform</artifactId>
+          <version>1.4.1-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>com.mashape.unirest</groupId>

@@ -1,8 +1,12 @@
 package ai.skymind.skil.examples.yolo2.modelserver.inference;
 
-import ai.skymind.skil.examples.yolo2.modelserver.inference.yolo2.*;
-
 import org.deeplearning4j.nn.layers.objdetect.DetectedObject;
+import org.deeplearning4j.nn.layers.objdetect.YoloUtils;
+import org.deeplearning4j.zoo.model.YOLO2;
+import org.deeplearning4j.zoo.model.helper.DarknetHelper;
+import org.deeplearning4j.zoo.util.ClassPrediction;
+import org.deeplearning4j.zoo.util.Labels;
+import org.deeplearning4j.zoo.util.darknet.COCOLabels;
 
 import org.datavec.image.data.Image;
 import org.datavec.image.loader.NativeImageLoader;
@@ -55,35 +59,19 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-
 import java.text.MessageFormat;
 import java.io.IOException;
-//import java.util.ArrayList;
-//import java.util.Arrays;
-//import java.util.List;
-//import java.util.logging.Level;
-//import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-/*
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-*/
-import java.util.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-//import java.util.Iterator;
-//import java.util.List;
 import java.io.InputStream;
-import java.net.URL;
-//import java.util.List;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -99,13 +87,17 @@ import org.apache.commons.io.IOUtils;
 
 
 import org.bytedeco.javacv.CanvasFrame;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -151,10 +143,8 @@ import ch.qos.logback.classic.Logger;
 */
 public class YOLO2_TF_Client extends Application {
 
-    //public static final int nClasses = 80;
-    public static final int gridWidth = 19;
-    public static final int gridHeight = 19;
-    public static final double[][] priorBoxes = {{0.57273, 0.677385}, {1.87446, 2.06253}, {3.33843, 5.47434}, {7.88282, 3.52778}, {9.77052, 9.16828}};
+    public static final int nClasses = 80;
+
     private static final String[] COLORS = { 
             "#6793be", "#990000", "#fececf", "#ffbcc9", "#ffb9c7", "#fdc6d1",
             "#fdc9d3", "#6793be", "#73a4d4", "#9abde0", "#9abde0", "#8fff8f", "#ffcfd8", "#808080", "#808080",
@@ -170,30 +160,37 @@ public class YOLO2_TF_Client extends Application {
     private static long globalStartTime = 0;
     private static long globalEndTime = 0;
 
-    @Parameter(names="--endpoint", description="Endpoint for classification", required=true)
-    private String skilInferenceEndpoint = ""; // EXAMPLE: "http://localhost:9008/endpoints/mnist/model/mnistmodel/default/";
+    private static class Args {
+        @Parameter(names="--endpoint", description="Endpoint for classification", required=false)
+        private String skilInferenceEndpoint = ""; // EXAMPLE: "http://localhost:9008/endpoints/yolo/model/yolo/default/";
 
-    // this is public cause the canvas object needs it on creation --> hack
-    @Parameter(names="--input", description="Image input file url", required=true)
-    public String input_image = "";
+        @Parameter(names="--input", description="Image input file url", required=false)
+        private String input_image = ""; // "https://raw.githubusercontent.com/pjreddie/darknet/master/data/dog.jpg";
 
-    static InputStream inputFileStream = null;
-    static INDArray networkGlobalOutput = null;
+        @Parameter(names="--camera", description="Camera input device number", required=false)
+        private int input_camera = -1; // needs to be 0 or larger
+    }
+    static Args args = new Args();
 
-    static List<DetectedObject> predictedObjects = null;
+    String auth_token = null;
+
+    int[] inputShape = { 3, 608, 608 };
+    int gridWidth = DarknetHelper.getGridWidth(inputShape);
+    int gridHeight = DarknetHelper.getGridHeight(inputShape);
+
+    NativeImageLoader imageLoader = new NativeImageLoader(inputShape[1], inputShape[2], inputShape[0], new ColorConversionTransform(COLOR_BGR2RGB));
+    OpenCVFrameConverter.ToMat matConverter = new OpenCVFrameConverter.ToMat();
+    Java2DFrameConverter bufImgConverter = new Java2DFrameConverter();
+    Labels labels = null;
+    Map<String, Paint> colors = null;
+    FrameGrabber frameGrabber = null;
+    INDArray networkGlobalOutput = null;
+    List<DetectedObject> predictedObjects = null;
     Mat imgMat = null;
-    
-    static String source_image = ""; // "https://raw.githubusercontent.com/pjreddie/darknet/master/data/dog.jpg";
+
     int imageWidth = 0, imageHeight = 0, imageChannels = 3;
 
     public YOLO2_TF_Client() { }
-
-    public YOLO2_TF_Client( String sourceImage ) {
-
-        this.source_image = sourceImage;
-
-    }
-
 
 /*
     Images
@@ -209,55 +206,49 @@ public class YOLO2_TF_Client extends Application {
 */
     public void run() throws Exception, IOException {
 
-        Set<String> loggers = new HashSet<>(Arrays.asList("org.apache.http", "groovyx.net.http", "org.reflections.Reflections"));
-    
-        for (String log : loggers) { 
-            Logger logger = (Logger)LoggerFactory.getLogger(log);
-            logger.setLevel(Level.INFO);
-            logger.setAdditive(false);
-        }
+        Logger root = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.INFO);
 
         globalStartTime = System.nanoTime();
-
-        // make model server network calls for { auth, inference }
-        skilClientGetImageInference( imageWidth, imageHeight );
 
         // kick off the javaFX rendering code --> .start( Stage ) below, blocked on the skil model server round trips for { auth, inference }
         launch();    
 
     }    
 
-    private void skilClientGetImageInference( int width, int height ) throws Exception, IOException  {
-        InputStream imgStream = new URL( source_image ).openStream();
-        inputFileStream = imgStream;
-
-        imgMat = imdecode(new Mat(IOUtils.toByteArray( imgStream )), CV_LOAD_IMAGE_COLOR);
+    private void skilClientGetImageInference( ) throws Exception, IOException  {
+        if (frameGrabber != null) {
+            frameGrabber.flush();
+            imgMat = matConverter.convert(frameGrabber.grab());
+        } else {
+            InputStream imgStream = new URL( args.input_image ).openStream();
+            imgMat = imdecode(new Mat(IOUtils.toByteArray( imgStream )), CV_LOAD_IMAGE_COLOR);
+        }
         imageHeight = imgMat.rows();
         imageWidth = imgMat.cols();
-        System.out.println( "Input Image: " + source_image );
+        System.out.println( "Input Image: " + args.input_image );
         System.out.println( "Input width: " + imageWidth );
         System.out.println( "Input height: " + imageHeight );
 
-        NativeImageLoader imageLoader = new NativeImageLoader(608, 608, 3, new ColorConversionTransform(COLOR_BGR2RGB));
         INDArray imgNDArrayTmp = imageLoader.asMatrix( imgMat );
         INDArray inputFeatures = imgNDArrayTmp.permute(0, 2, 3, 1).muli(1.0 / 255.0).dup('c');
 
         String imgBase64 = Nd4jBase64.base64String( inputFeatures );
-        Authorization auth = new Authorization();
-        long start = System.nanoTime();
-        String auth_token = auth.getAuthToken( "admin", "admin" );
-        long end = System.nanoTime();
-        System.out.println("Getting the auth token took: " + (end - start) / 1000000 + " ms");
-
-
-        //System.out.println( "auth token: " + auth_token );
+        if (auth_token == null) {
+            Authorization auth = new Authorization();
+            long start = System.nanoTime();
+            auth_token = auth.getAuthToken( "admin", "admin" );
+            long end = System.nanoTime();
+            System.out.println("Getting the auth token took: " + (end - start) / 1000000 + " ms");
+            //System.out.println( "auth token: " + auth_token );
+        }
 
         System.out.println( "Sending the Classification Payload..." );
-        start = System.nanoTime();
+        long start = System.nanoTime();
         try {
 
             JSONObject returnJSONObject = 
-                    Unirest.post( skilInferenceEndpoint + "predict" )
+                    Unirest.post( args.skilInferenceEndpoint + "predict" )
                             .header("accept", "application/json")
                             .header("Content-Type", "application/json")
                             .header( "Authorization", "Bearer " + auth_token)
@@ -279,15 +270,13 @@ public class YOLO2_TF_Client extends Application {
 
             }
 
-            end = System.nanoTime();
+            long end = System.nanoTime();
             System.out.println("SKIL inference REST round trip took: " + (end - start) / 1000000 + " ms");
-
 
             String predict_return_array = returnJSONObject.getJSONObject("prediction").getString("array");
             System.out.println( "REST payload return length: " + predict_return_array.length() );
-            INDArray networkOutput = Nd4jBase64.fromBase64( predict_return_array );
 
-            networkGlobalOutput = networkOutput; // hack to pass info to main thread
+            networkGlobalOutput = Nd4jBase64.fromBase64( predict_return_array );
 
         } catch (UnirestException e) {
             e.printStackTrace();
@@ -297,63 +286,67 @@ public class YOLO2_TF_Client extends Application {
 
     public static void main(String[] args) throws Exception {
 
-        // the JavaFX code initializes early, needed the image size from the image src path (yes, hack)        
-        YOLO2_TF_Client m = new YOLO2_TF_Client( args[ 1 ] );
-
+        // the JavaFX code initializes early, need to parse arguments and store in static variable
         JCommander.newBuilder()
-          .addObject(m)
+          .addObject(YOLO2_TF_Client.args)
           .build()
           .parse(args);
+
+        YOLO2_TF_Client m = new YOLO2_TF_Client( );
 
         m.run();
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-        
-        // only because this is a separate thread and we need the info
-        InputStream imgStream = new URL( source_image ).openStream();
-        inputFileStream = imgStream;
-        imgMat = imdecode(new Mat(IOUtils.toByteArray( imgStream )), CV_LOAD_IMAGE_COLOR);
-        imageHeight = imgMat.rows();
-        imageWidth = imgMat.cols();
+
+        if (args.input_camera >= 0) {
+            System.out.println("Opening camara " + args.input_camera);
+            frameGrabber = new OpenCVFrameGrabber(args.input_camera);
+            frameGrabber.start();
+        }
+
+        labels = new COCOLabels();
+        colors = new HashMap<>();
+        for (int i = 0; i < nClasses; i++) {
+            colors.put( labels.getLabel( i ), Color.web( COLORS[i] ) );
+        }
+
+        // make model server network calls for { auth, inference }
+        skilClientGetImageInference( );
 
         Canvas canvas = new Canvas(imageWidth, imageHeight);
         GraphicsContext ctx = canvas.getGraphicsContext2D();
-        InputStream is = new URL( source_image ).openStream();
 
-        ctx.drawImage(new javafx.scene.image.Image(is, this.imageWidth, this.imageHeight, false, false), 0, 0);
+        ctx.drawImage(SwingFXUtils.toFXImage(bufImgConverter.convert(matConverter.convert(imgMat)), null), 0, 0);
         stage.setScene(new Scene(new StackPane(canvas), this.imageWidth, this.imageHeight));
         renderJavaFXStyle( ctx );
         stage.setTitle("YOLO2");
         stage.show();
 
+        if (frameGrabber != null) {
+            new Thread(() -> {
+                try {
+                    while (stage.isShowing()) {
+                        skilClientGetImageInference( );
+                        ctx.drawImage(SwingFXUtils.toFXImage(bufImgConverter.convert(matConverter.convert(imgMat)), null), 0, 0);
+                        renderJavaFXStyle( ctx );
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
     }
 
-    /**
-        TODO: we're using 2 different sources of labels here, fix this
-        --- let's move to centralized colors and labels for the demo
-    */
     private void renderJavaFXStyle(GraphicsContext ctx) throws Exception {
 
-        INDArray boundingBoxPriors = Nd4j.create(priorBoxes);
-        long start = System.nanoTime();
-        List<String> labels = IOUtils.readLines(new URL("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names").openStream());
-        long end = System.nanoTime();
-        System.out.println("Retrieving labels took: " + (end - start) / 1000000 + " ms");
-
-
-        Map<String, Paint> colors = new HashMap<>();
-
-        for (int i = 0; i < labels.size(); i++) {
-            colors.put( labels.get( i ), Color.web( COLORS[i] ) );
-        }
-
+        INDArray boundingBoxPriors = Nd4j.create(YOLO2.priorBoxes);
 
         ctx.setLineWidth(3);
         ctx.setTextAlign(TextAlignment.LEFT);
 
-        start = System.nanoTime();
+        long start = System.nanoTime();
         for (int i = 0; i < 1; i++) {
             INDArray permuted = networkGlobalOutput.permute(0, 3, 1, 2);
             INDArray activated = YoloUtils.activate(boundingBoxPriors, permuted);
@@ -363,13 +356,15 @@ public class YOLO2_TF_Client extends Application {
             //System.out.println( "height: " + imageHeight );
 
             for (DetectedObject o : predictedObjects) {
-                String label = labels.get(o.getPredictedClass());
+                ClassPrediction classPrediction = labels.decodePredictions(o.getClassPredictions(), 1).get(0).get(0);
+                String label = classPrediction.getLabel();
                 long x = Math.round(imageWidth  * o.getCenterX() / gridWidth);
                 long y = Math.round(imageHeight * o.getCenterY() / gridHeight);
                 long w = Math.round(imageWidth  * o.getWidth()   / gridWidth);
                 long h = Math.round(imageHeight * o.getHeight()  / gridHeight);
 
-                System.out.println("\"" + label + "\" at [" + x + "," + y + ";" + w + "," + h + "], conf = " + o.getConfidence());
+                System.out.println("\"" + label + "\" at [" + x + "," + y + ";" + w + "," + h + "], score = "
+                                + o.getConfidence() * classPrediction.getProbability());
 
                 double[] xy1 = o.getTopLeftXY();
                 double[] xy2 = o.getBottomRightXY();
@@ -399,7 +394,7 @@ public class YOLO2_TF_Client extends Application {
         }
 
         globalEndTime = System.nanoTime();
-        end = System.nanoTime();
+        long end = System.nanoTime();
         System.out.println("Rendering code took: " + (end - start) / 1000000 + " ms");
 
         System.out.println("Overall Program Time: " + (globalEndTime - globalStartTime) / 1000000 + " ms");
@@ -414,9 +409,10 @@ public class YOLO2_TF_Client extends Application {
         private String host;
         private String port;
 
-        public Authorization() {
-            this.host = "localhost";
-            this.port = "9008";
+        public Authorization() throws Exception {
+            URL url = new URL(args.skilInferenceEndpoint);
+            this.host = url.getHost();
+            this.port = Integer.toString(url.getPort());
         }
 
         public Authorization(String host, String port) {

@@ -146,7 +146,7 @@ public class YOLO2_TF_Client extends Application {
     public static final int nClasses = 80;
 
     private static final String[] COLORS = { 
-            "#6793be", "#990000", "#fececf", "#ffbcc9", "#ffb9c7", "#fdc6d1",
+            "#6793be", "#990000", "#00ff00", "#ffbcc9", "#ffb9c7", "#fdc6d1",
             "#fdc9d3", "#6793be", "#73a4d4", "#9abde0", "#9abde0", "#8fff8f", "#ffcfd8", "#808080", "#808080",
             "#ffba00", "#6699ff", "#009933", "#1c1c1c", "#08375f", "#116ebf", "#e61d35", "#106bff", "#8f8fff",
             "#8fff8f", "#dbdbff", "#dbffdb", "#dbffff", "#ffdbdb", "#ffc2c2", "#ffa8a8", "#ff8f8f", "#e85e68",

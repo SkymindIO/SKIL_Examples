@@ -16,15 +16,21 @@ import org.nd4j.linalg.factory.Nd4j;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class NormalizeUciData {
+    private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
 
-    public static final String DEFAULT_TRAIN_OUTPUT = "/tmp/synthetic_control.data-training-normalized.csv";
+    public static final String DEFAULT_TRAIN_OUTPUT = tempFileNamed("synthetic_control.data-training-normalized.csv");
     private static final String DEFAULT_TRAIN_SHA1 = "6b5134778cfea12cfe5f463db904bb89aff7a1ec";
 
-    public static final String DEFAULT_TEST_OUTPUT = "/tmp/synthetic_control.data-test-normalized.csv";
+    public static final String DEFAULT_TEST_OUTPUT = tempFileNamed("synthetic_control.data-test-normalized.csv");
     private static final String DEFAULT_TEST_SHA1 = "74177e3b9688344785e7585c596235ae7d84a368";
+
+    private static String tempFileNamed(String name) {
+        return Paths.get(TEMP_DIR, name).toAbsolutePath().toString();
+    }
 
     private enum Normalizer {
         Standardize (new NormalizerStandardize());
@@ -57,24 +63,10 @@ public class NormalizeUciData {
         File testOutputFile = new File(testOutputPath);
 
         if (trainingOutputFile.exists() || testOutputFile.exists()) {
-            final FileInputStream fisTrain = new FileInputStream(trainingOutputFile);
-            final FileInputStream fisTest = new FileInputStream(testOutputFile);
+            System.out.println(String.format("Warning: overwriting output files (%s, %s)", trainOutputPath, testOutputPath));
 
-            final String trainSha1 = DigestUtils.sha1Hex(fisTrain);
-            final String testSha1 = DigestUtils.sha1Hex(fisTest);
-
-            fisTrain.close();
-            fisTest.close();
-
-            if (!(trainSha1.equals(DEFAULT_TRAIN_SHA1) && testSha1.equals(DEFAULT_TEST_SHA1))) {
-                throw new IllegalStateException(
-                        String.format("cowardly refusing to overwrite output files (%s, %s)",
-                                trainOutputPath, testOutputPath));
-            }
-
-            // They match, so tell the user
-            System.out.format("output files already found, and have matching checksums, keeping as is\n");
-            return;
+            trainingOutputFile.delete();
+            testOutputFile.delete();
         }
 
         System.out.format("downloading from %s\n", downloadUrl);

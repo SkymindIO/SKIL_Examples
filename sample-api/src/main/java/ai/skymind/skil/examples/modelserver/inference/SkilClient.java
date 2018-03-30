@@ -5,6 +5,7 @@ import ai.skymind.skil.examples.modelserver.inference.model.Knn;
 import ai.skymind.skil.examples.modelserver.inference.model.Login;
 import ai.skymind.skil.examples.modelserver.inference.model.TransformedArray;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -31,7 +32,6 @@ public class SkilClient {
 
     private void login(String endpoint) {
         if (token == null) {
-            RestTemplate restTemplate = new RestTemplate();
             URI endpointUri = URI.create(endpoint);
             String scheme = endpointUri.getScheme();
             String host = endpointUri.getHost();
@@ -48,7 +48,8 @@ public class SkilClient {
                 );
                 token = res.getBody().token;
             } catch (Exception e) {
-                // Ignore
+                System.err.println("Login failed: " + e.getMessage());
+                e.printStackTrace();
             }
 
             if (token == null) {
@@ -59,11 +60,11 @@ public class SkilClient {
     }
 
     private <T> HttpEntity<T> createEntity(T entity) {
-        HttpEntity<T> httpEntity = new HttpEntity<>(entity);
-        httpEntity.getHeaders().add("Authorization", "Bearer" + token);
-        httpEntity.getHeaders().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        return httpEntity;
+        return new HttpEntity<>(entity, headers);
     }
 
     public Inference.Response.Classify classify(String endpoint, Inference.Request request) {

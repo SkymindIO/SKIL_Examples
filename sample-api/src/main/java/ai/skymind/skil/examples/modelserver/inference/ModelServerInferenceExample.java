@@ -58,8 +58,7 @@ public class ModelServerInferenceExample {
         // Open file
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
-        // Initialize RestTemplate
-        RestTemplate restTemplate = new RestTemplate();
+        SkilClient skilClient = new SkilClient(textAsJson);
 
         // Read each line
         String line = null;
@@ -74,52 +73,28 @@ public class ModelServerInferenceExample {
                 }
             }
 
-            final HttpHeaders requestHeaders = new HttpHeaders();
-            final Object transformRequest;
-
-            if (isSequential == true) {
-                requestHeaders.add("Sequence", "true");
-                transformRequest = new TransformedArray.BatchedRequest(fields);
+            final TransformedArray.Response arrayResponse;
+            if (isSequential) {
+                arrayResponse = skilClient.transform(
+                        transformedArrayEndpoint,
+                        new TransformedArray.BatchedRequest(fields)
+                );
             } else {
-                transformRequest = new TransformedArray.Request(fields);
+                arrayResponse = skilClient.transform(
+                        transformedArrayEndpoint,
+                        new TransformedArray.Request(fields)
+                );
             }
 
-            if (textAsJson) {
-                // Accept JSON
-                requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+            Object response;
 
-                // Temp fix
-                List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-                converters.add(new ExtendedMappingJackson2HttpMessageConverter());
-                restTemplate.setMessageConverters(converters);
+            if (inferenceType == InferenceType.Single) {
+                response = skilClient.classify(inferenceEndpoint, new Inference.Request(arrayResponse.getNdArray()));
+            } else if (inferenceType == InferenceType.Multi) {
+                response = skilClient.multiClassify(inferenceEndpoint, new Inference.Request(arrayResponse.getNdArray()));
+            } else {
+                response = skilClient.knn(inferenceEndpoint, new Knn.Request(knnN, arrayResponse.getNdArray()));
             }
-
-            final HttpEntity<Object> httpEntity =
-                    new HttpEntity<Object>(transformRequest, requestHeaders);
-
-            final TransformedArray.Response arrayResponse = restTemplate.postForObject(
-                    transformedArrayEndpoint,
-                    httpEntity,
-                    TransformedArray.Response.class);
-
-            Class clazz;
-            Object request;
-
-            if (inferenceType == InferenceType.Single || inferenceType == InferenceType.Multi) {
-                clazz = (inferenceType == InferenceType.Single) ?
-                        Inference.Response.Classify.class : Inference.Response.MultiClassify.class;
-
-                request = new Inference.Request(arrayResponse.getNdArray());
-
-             } else {
-                 clazz = Knn.Response.class;
-                 request = new Knn.Request(knnN, arrayResponse.getNdArray());
-             }
-
-             final Object response = restTemplate.postForObject(
-                         inferenceEndpoint,
-                         request,
-                         clazz);
 
              System.out.format("Inference response: %s\n", response.toString());
         }

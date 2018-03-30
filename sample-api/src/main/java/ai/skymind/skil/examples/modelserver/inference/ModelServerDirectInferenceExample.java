@@ -7,14 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.serde.base64.Nd4jBase64;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.util.List;
 
 public class ModelServerDirectInferenceExample {
 
@@ -41,14 +38,7 @@ public class ModelServerDirectInferenceExample {
         // Open file
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
-        // Initialize RestTemplate
-        RestTemplate restTemplate = new RestTemplate();
-
-        if (textAsJson) {
-            List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-            converters.add(new ExtendedMappingJackson2HttpMessageConverter());
-            restTemplate.setMessageConverters(converters);
-        }
+        SkilClient skilClient = new SkilClient(textAsJson);
 
         // Read each line
         String line = null;
@@ -88,10 +78,7 @@ public class ModelServerDirectInferenceExample {
             }
 
             Inference.Request request = new Inference.Request(Nd4jBase64.base64String(array));
-            final Object response = restTemplate.postForObject(
-                    inferenceEndpoint,
-                    request,
-                    Inference.Response.Classify.class);
+            Inference.Response.Classify response = skilClient.classify(inferenceEndpoint, request);
 
             System.out.format("Inference response: %s\n", response.toString());
             if (label != null) {

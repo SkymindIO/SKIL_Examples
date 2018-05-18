@@ -341,7 +341,7 @@ public class YOLO2_TF_Client extends Application {
 
     private void renderJavaFXStyle(GraphicsContext ctx) throws Exception {
 
-        INDArray boundingBoxPriors = Nd4j.create(YOLO2.priorBoxes);
+        INDArray boundingBoxPriors = Nd4j.create(YOLO2.DEFAULT_PRIOR_BOXES);
 
         ctx.setLineWidth(3);
         ctx.setTextAlign(TextAlignment.LEFT);

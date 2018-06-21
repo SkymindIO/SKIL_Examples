@@ -1,12 +1,10 @@
 package ai.skymind.skil.examples.anomalydetection.modelserver.auth;
 
-
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 
 import java.text.MessageFormat;
-
 
 public class Authorization {
 

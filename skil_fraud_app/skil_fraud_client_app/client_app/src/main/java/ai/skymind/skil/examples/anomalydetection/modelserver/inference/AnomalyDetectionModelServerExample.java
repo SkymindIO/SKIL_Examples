@@ -22,11 +22,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import ai.skymind.skil.examples.anomalydetection.modelserver.auth.Authorization;
 
 public class AnomalyDetectionModelServerExample {
-
 
     @Parameter(names="--endpoint", description="Endpoint for classification", required=true)
     private String skilInferenceEndpoint = "";
@@ -37,13 +38,11 @@ public class AnomalyDetectionModelServerExample {
     public void run() throws Exception, IOException {
 
         File CSVFeatureFile = null;
-
         INDArray finalRecord = null;
 
         if ("blank".equals(inputCSVFeatureFile)) {
 
             finalRecord = Nd4j.zeros( 1, 10);
-
             System.out.println( "Generating blank test csv ..." );
 
         } else {
@@ -59,11 +58,8 @@ public class AnomalyDetectionModelServerExample {
 
             CSVRecordReader rr1 = new CSVRecordReader(1);
             rr1.initialize(new FileSplit(CSVFeatureFile));
-
             DataSetIterator dsi = new RecordReaderDataSetIterator(rr1, 1);
-
             finalRecord = dsi.next().getFeatures();
-
         }
 
         String CSVBase64 = Nd4jBase64.base64String(finalRecord);
@@ -72,13 +68,12 @@ public class AnomalyDetectionModelServerExample {
         skilClientGetInference( CSVBase64 );
     }
 
-    private void skilClientGetInference( String CSVBase64 ) {
+    private void skilClientGetInference( String CSVBase64 ) throws MalformedURLException {
 
-        Authorization auth = new Authorization();
-
+        URL url = new URL(skilInferenceEndpoint);
+        Authorization auth = new Authorization(url.getHost(), String.valueOf(url.getPort()));
         String auth_token = auth.getAuthToken( "admin", "admin" );
-
-        System.out.println( "auth token: " + auth_token );
+        System.out.println( "JWT Token: " + auth_token );
 
         try {
 

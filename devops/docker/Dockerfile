@@ -8,8 +8,6 @@ ADD deploy_model.sh /deploy_model.sh
 
 RUN chmod 755 /deploy_model.sh
 
-RUN nohup start-skil.sh &
-
 RUN yum install -y epel-release 
 RUN yum install -y python-pip 
 RUN pip install numpy skil-client

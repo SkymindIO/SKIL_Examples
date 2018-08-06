@@ -28,12 +28,11 @@ done
 
 echo "SKIL Ready"
 
-echo "[hit enter key to exit] or run 'docker stop <container>'"
-
 echo "Deploying model file"
 
 python deploy_model.py
 
+echo "[hit enter key to exit] or run 'docker stop <container>'"
 read
 
 bash /opt/skil/sbin/stop-skil-daemon

@@ -1,0 +1,4 @@
+[Skymind]
+name=Skymind Repository
+baseurl=http://packages.skymind.io/rpm/1.0
+gpgcheck=0

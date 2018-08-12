@@ -12,6 +12,8 @@ export SKIL_PUBLIC_KEY_PATH=/etc/skil/publickey.txt
 export ZOOKEEPER_HOST=localhost
 export ZOOKEEPER_EMBEDDED=true
 
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk
+
 bash /opt/skil/sbin/pre-start.sh
 bash /opt/skil/sbin/start-skil-daemon
 
@@ -31,6 +33,14 @@ echo "SKIL Ready"
 echo "Deploying model file"
 
 python deploy_model.py
+
+# Uncomment the following lines to run an additional zeppelin servers and interpreters
+
+# echo "Running additional Zeppelin Server"
+# $SKIL_HOME/sbin/skil zeppelin --name Zeppelin2 --interpreterPort 6560 --zeppelinPort 8140
+#
+# echo "Creating the interpreter process"
+# $SKIL_HOME/sbin/skil zeppelinInterpreter --interpreterPort 6560
 
 echo "[hit enter key to exit] or run 'docker stop <container>'"
 read

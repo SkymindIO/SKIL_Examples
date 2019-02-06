@@ -4,6 +4,9 @@ import ai.skymind.auth.ApiKeyAuth;
 import ai.skymind.skil.DefaultApi;
 import ai.skymind.skil.model.*;
 
+import java.io.File;
+import java.util.Arrays;
+
 /**
  * Hello world!
  *
@@ -12,16 +15,19 @@ public class BasicWorkflow
 {
     public static void main( String[] args ) {
 
-        ApiClient apiClient = Configuration.getDefaultApiClient();
-        apiClient.setBasePath("http://localhost:9008"); // Replace this with the host and port of your SKIL server if required
+        ApiClient apiClient = new ApiClient();
+        apiClient.setBasePath("http://localhost:9008"); // Replace this with the host and port of your SKIL server, if required.
 
-        DefaultApi apiInstance = new DefaultApi();
+        DefaultApi apiInstance = new DefaultApi(apiClient);
+
+        String deploymentId = null;
+        String modelId = null;
 
         try { // Login Successful
             LoginResponse loginResponse = apiInstance.login(
                     new LoginRequest()
-                            .userId("admin")
-                            .password("Password@123")
+                        .userId("admin")
+                        .password("Password@123")
             );
 
             System.out.println(loginResponse);
@@ -31,10 +37,94 @@ public class BasicWorkflow
             api_key.setApiKeyPrefix("Bearer");
             api_key.setApiKey(loginResponse.getToken());
 
+            DeploymentResponse deploymentResponse = apiInstance.deploymentCreate(
+                    new CreateDeploymentRequest().name("new_deployment"));
+            deploymentId = deploymentResponse.getId();
 
-        } catch (ApiException e) {
-            System.err.println("Exception when calling DefaultApi#login");
+            System.out.println("\n\nDeployment Created with ID: " + deploymentResponse.getId());
+
+            String modelFilePath = BasicWorkflow.class.getClassLoader().getResource("model.hdf5").getPath();
+            FileUploadList fileUploadList = apiInstance.upload(new File(modelFilePath));
+
+            String serverFilePath = "file://" + fileUploadList.getFileUploadResponseList().get(0).getPath();
+            System.out.println("File saved in server at path: " + serverFilePath);
+
+            String modelName = "new_model";
+
+            ModelEntity modelEntity = apiInstance.deployModel(deploymentId,
+                new ImportModelRequest()
+                    .name(modelName)
+                    .uri(Arrays.asList(
+                        deploymentResponse.getDeploymentSlug() + "/model/" + modelName + "/default",
+                        deploymentResponse.getDeploymentSlug() + "/model/" + modelName + "/v1"))
+                    .modelType("model")
+                    .scale(1)
+                    .fileLocation(serverFilePath)
+                );
+            modelId = modelEntity.getId().toString();
+
+            System.out.println("Model deployed: ");
+            System.out.println(modelEntity);
+
+            System.out.print("Waiting for model server to start.");
+            do {
+                modelEntity = apiInstance.modelStateChange(
+                        deploymentId,
+                        modelId,
+                        new SetState().state(SetState.StateEnum.START));
+
+                Thread.sleep(5000);
+                System.out.print(".");
+            } while (modelEntity.getState() != ModelEntity.StateEnum.STARTED);
+            System.out.println("\nModel server started successfully!");
+
+            Thread.sleep(5000);
+
+            System.out.println(
+                apiInstance.predict(
+                    new Prediction()
+                        .id("12345")
+                        .needsPreProcessing(false)
+                        .prediction(
+                            new INDArray()
+                                .shape(Arrays.asList(1, 784))
+                                .data(Arrays.asList(new Float[784]))
+                                .ordering(INDArray.OrderingEnum.C)
+                        ),
+                    deploymentResponse.getDeploymentSlug(), "default", modelEntity.getName()
+                )
+            );
+        } catch (ApiException | InterruptedException e) {
             e.printStackTrace();
+        } finally { // Clean up resources
+            try {
+                System.out.println("\nCleaning up resources...");
+                if (deploymentId != null && modelId != null) {
+                    ModelEntity modelEntity;
+                    System.out.print("Waiting for model server to stop.");
+                    do {
+                        modelEntity = apiInstance.modelStateChange(
+                                deploymentId,
+                                modelId,
+                                new SetState().state(SetState.StateEnum.STOP));
+
+                        Thread.sleep(5000);
+                        System.out.print(".");
+                    } while (modelEntity.getState() != ModelEntity.StateEnum.STOPPED);
+                    System.out.println("\nModel server stopped successfully!");
+
+                    System.out.println("\nDeleting model!");
+                    System.out.println(apiInstance.deleteModel(deploymentId, modelId));
+                }
+
+                if(deploymentId != null) {
+                    System.out.println("\nDeleting deployment");
+                    System.out.println(apiInstance.deploymentDelete(deploymentId));
+                }
+            } catch (ApiException | InterruptedException e) {
+                System.err.println("Error while cleaning up resources.");
+                e.printStackTrace();
+            }
         }
     }
 }

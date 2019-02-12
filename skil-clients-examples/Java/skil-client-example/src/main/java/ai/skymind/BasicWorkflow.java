@@ -6,6 +6,7 @@ import ai.skymind.skil.model.*;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Hello world!
@@ -43,7 +44,7 @@ public class BasicWorkflow
 
             System.out.println("\n\nDeployment Created with ID: " + deploymentResponse.getId());
 
-            String modelFilePath = BasicWorkflow.class.getClassLoader().getResource("model.hdf5").getPath();
+            String modelFilePath = BasicWorkflow.class.getClassLoader().getResource("keras_cifar10_trained_model.h5").getPath();
             FileUploadList fileUploadList = apiInstance.upload(new File(modelFilePath));
 
             String serverFilePath = "file://" + fileUploadList.getFileUploadResponseList().get(0).getPath();
@@ -74,27 +75,22 @@ public class BasicWorkflow
                         new SetState().state(SetState.StateEnum.START));
 
                 Thread.sleep(5000);
+                Thread.sleep(5000);
                 System.out.print(".");
             } while (modelEntity.getState() != ModelEntity.StateEnum.STARTED);
             System.out.println("\nModel server started successfully!");
 
             Thread.sleep(5000);
 
+            String testImageFilePath = BasicWorkflow.class.getClassLoader().getResource("frog.jpg").getPath();
+            File testImageFile = new File(testImageFilePath);
+
             System.out.println(
-                apiInstance.predict(
-                    new Prediction()
-                        .id("12345")
-                        .needsPreProcessing(false)
-                        .prediction(
-                            new INDArray()
-                                .shape(Arrays.asList(1, 784))
-                                .data(Arrays.asList(new Float[784]))
-                                .ordering(INDArray.OrderingEnum.C)
-                        ),
-                    deploymentResponse.getDeploymentSlug(), "default", modelEntity.getName()
-                )
+                    apiInstance.predictimage(
+                            deploymentResponse.getDeploymentSlug(), "default", modelName, testImageFile
+                    )
             );
-        } catch (ApiException | InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally { // Clean up resources
             try {
@@ -121,7 +117,7 @@ public class BasicWorkflow
                     System.out.println("\nDeleting deployment");
                     System.out.println(apiInstance.deploymentDelete(deploymentId));
                 }
-            } catch (ApiException | InterruptedException e) {
+            } catch (Exception e) {
                 System.err.println("Error while cleaning up resources.");
                 e.printStackTrace();
             }

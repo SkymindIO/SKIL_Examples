@@ -30,3 +30,9 @@ target
 
 # devops tutorials
 /devops/docker/data_directory
+
+.vscode
+.settings
+.classpath
+.factorypath
+.project

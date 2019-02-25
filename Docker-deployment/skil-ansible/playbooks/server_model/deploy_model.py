@@ -3,7 +3,8 @@ import unittest
 
 import numpy
 import skil_client
-from skil_client import *
+from skil_client import Configuration, ApiClient, CreateDeploymentRequest
+from skil_client import ImportModelRequest, SetState
 from skil_client.rest import ApiException
 
 debug = False

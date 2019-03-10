@@ -9,7 +9,7 @@ The purpose of this demo on SKIL is two-fold:
 
 ## Demo Workflow
 * Start up SKIL 1.0.2
-* [Download](https://github.com/deeplearning4j/dl4j-test-resources/blob/master/src/main/resources/tf_graphs/examples/yolov2_608x608/frozen_model.pb) the model .pb file directly or convert the YOLO2 Darkent Model to the .pb TensorFlow format
+* [Download](https://github.com/deeplearning4j/dl4j-test-resources/blob/681a0cf2e9edb62c88a5dc41f7516e3b1dff3f19/src/main/resources/tf_graphs/examples/yolov2_608x608/frozen_model.pb) the model .pb file directly or convert the YOLO2 Darkent Model to the .pb TensorFlow format
 * Import the model into the SKIL Model Server
 * Run the YOLO2 Client from the local command line
 

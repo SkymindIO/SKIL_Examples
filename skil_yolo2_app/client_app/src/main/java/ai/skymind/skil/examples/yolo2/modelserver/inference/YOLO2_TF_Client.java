@@ -1,5 +1,9 @@
 package ai.skymind.skil.examples.yolo2.modelserver.inference;
 
+import com.mashape.unirest.http.HttpResponse;
+import io.skymind.skil.predict.client.PredictServiceClient;
+import io.skymind.skil.service.model.DetectObjectsRequest;
+import io.skymind.skil.service.model.DetectionResult;
 import org.deeplearning4j.nn.layers.objdetect.DetectedObject;
 import org.deeplearning4j.nn.layers.objdetect.YoloUtils;
 import org.deeplearning4j.zoo.model.YOLO2;
@@ -185,6 +189,7 @@ public class YOLO2_TF_Client extends Application {
     Map<String, Paint> colors = null;
     FrameGrabber frameGrabber = null;
     INDArray networkGlobalOutput = null;
+    DetectionResult detectionResult = null;
     List<DetectedObject> predictedObjects = null;
     Mat imgMat = null;
 
@@ -216,12 +221,81 @@ public class YOLO2_TF_Client extends Application {
 
     }    
 
+//    private void skilClientGetImageInference( ) throws Exception, IOException  {
+//        if (frameGrabber != null) {
+//            frameGrabber.flush();
+//            imgMat = matConverter.convert(frameGrabber.grab());
+//        } else {
+//            InputStream imgStream = new URL( args.input_image ).openStream();
+//            imgMat = imdecode(new Mat(IOUtils.toByteArray( imgStream )), CV_LOAD_IMAGE_COLOR);
+//        }
+//        imageHeight = imgMat.rows();
+//        imageWidth = imgMat.cols();
+//        System.out.println( "Input Image: " + args.input_image );
+//        System.out.println( "Input width: " + imageWidth );
+//        System.out.println( "Input height: " + imageHeight );
+//
+//        INDArray imgNDArrayTmp = imageLoader.asMatrix( imgMat );
+//        INDArray inputFeatures = imgNDArrayTmp.permute(0, 2, 3, 1).muli(1.0 / 255.0).dup('c');
+//
+//        String imgBase64 = Nd4jBase64.base64String( inputFeatures );
+//        if (auth_token == null) {
+//            Authorization auth = new Authorization();
+//            long start = System.nanoTime();
+//            auth_token = auth.getAuthToken( "admin", "rlaeowns" );
+//            long end = System.nanoTime();
+//            System.out.println("Getting the auth token took: " + (end - start) / 1000000 + " ms");
+//            //System.out.println( "auth token: " + auth_token );
+//        }
+//
+//        System.out.println( "Sending the Classification Payload..." );
+//        long start = System.nanoTime();
+//        try {
+//
+//            JSONObject returnJSONObject =
+//                    Unirest.post( args.skilInferenceEndpoint + "predict" )
+//                            .header("accept", "application/json")
+//                            .header("Content-Type", "application/json")
+//                            .header( "Authorization", "Bearer " + auth_token)
+//                            .body(new JSONObject() //Using this because the field functions couldn't get translated to an acceptable json
+//                                    .put( "id", "some_id" )
+//                                    .put("prediction", new JSONObject().put("array", imgBase64))
+//                                    .toString())
+//                            .asJson()
+//                            .getBody().getObject(); //.toString();
+//
+//            try {
+//
+//                returnJSONObject.getJSONObject("prediction").getString("array");
+//
+//            } catch (org.json.JSONException je) {
+//
+//                System.out.println( "\n\nException\n\nReturn: " + returnJSONObject );
+//                return;
+//
+//            }
+//
+//            long end = System.nanoTime();
+//            System.out.println("SKIL inference REST round trip took: " + (end - start) / 1000000 + " ms");
+//
+//            String predict_return_array = returnJSONObject.getJSONObject("prediction").getString("array");
+//            System.out.println( "REST payload return length: " + predict_return_array.length() );
+//
+//            networkGlobalOutput = Nd4jBase64.fromBase64( predict_return_array );
+//
+//        } catch (UnirestException e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
+
     private void skilClientGetImageInference( ) throws Exception, IOException  {
         if (frameGrabber != null) {
             frameGrabber.flush();
             imgMat = matConverter.convert(frameGrabber.grab());
         } else {
-            InputStream imgStream = new URL( args.input_image ).openStream();
+//            InputStream imgStream = new URL( args.input_image ).openStream();
+            InputStream imgStream = new FileInputStream(new File(args.input_image));
             imgMat = imdecode(new Mat(IOUtils.toByteArray( imgStream )), CV_LOAD_IMAGE_COLOR);
         }
         imageHeight = imgMat.rows();
@@ -230,14 +304,11 @@ public class YOLO2_TF_Client extends Application {
         System.out.println( "Input width: " + imageWidth );
         System.out.println( "Input height: " + imageHeight );
 
-        INDArray imgNDArrayTmp = imageLoader.asMatrix( imgMat );
-        INDArray inputFeatures = imgNDArrayTmp.permute(0, 2, 3, 1).muli(1.0 / 255.0).dup('c');
 
-        String imgBase64 = Nd4jBase64.base64String( inputFeatures );
         if (auth_token == null) {
             Authorization auth = new Authorization();
             long start = System.nanoTime();
-            auth_token = auth.getAuthToken( "admin", "admin" );
+            auth_token = auth.getAuthToken( "admin", "rlaeowns" );
             long end = System.nanoTime();
             System.out.println("Getting the auth token took: " + (end - start) / 1000000 + " ms");
             //System.out.println( "auth token: " + auth_token );
@@ -245,42 +316,20 @@ public class YOLO2_TF_Client extends Application {
 
         System.out.println( "Sending the Classification Payload..." );
         long start = System.nanoTime();
+//        try {
+
+            PredictServiceClient client = new PredictServiceClient(args.skilInferenceEndpoint);
+            client.setAuthToken(auth_token);
+            imwrite("/tmp/yolo_tmp.jpg", imgMat);
+//            detectionResult = client.detectObjects(new DetectObjectsRequest("some_id", false, 0.5, new File("/home/kepricon/git/lagom-skil-api/skil-predict-parent/skil-impl/src/test/resources/goldenretriever.jpg")));
         try {
-
-            JSONObject returnJSONObject = 
-                    Unirest.post( args.skilInferenceEndpoint + "predict" )
-                            .header("accept", "application/json")
-                            .header("Content-Type", "application/json")
-                            .header( "Authorization", "Bearer " + auth_token)
-                            .body(new JSONObject() //Using this because the field functions couldn't get translated to an acceptable json
-                                    .put( "id", "some_id" )
-                                    .put("prediction", new JSONObject().put("array", imgBase64))
-                                    .toString())
-                            .asJson()
-                            .getBody().getObject(); //.toString(); 
-
-            try {
-
-                returnJSONObject.getJSONObject("prediction").getString("array");
-
-            } catch (org.json.JSONException je) { 
-
-                System.out.println( "\n\nException\n\nReturn: " + returnJSONObject );
-                return;
-
-            }
+            detectionResult = client.detectObjects(new DetectObjectsRequest("some_id", false, 0.5, new File("/tmp/yolo_tmp.jpg")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
             long end = System.nanoTime();
             System.out.println("SKIL inference REST round trip took: " + (end - start) / 1000000 + " ms");
-
-            String predict_return_array = returnJSONObject.getJSONObject("prediction").getString("array");
-            System.out.println( "REST payload return length: " + predict_return_array.length() );
-
-            networkGlobalOutput = Nd4jBase64.fromBase64( predict_return_array );
-
-        } catch (UnirestException e) {
-            e.printStackTrace();
-        }
 
     }
 
@@ -339,6 +388,68 @@ public class YOLO2_TF_Client extends Application {
         }
     }
 
+//    private void renderJavaFXStyle(GraphicsContext ctx) throws Exception {
+//
+//        INDArray boundingBoxPriors = Nd4j.create(YOLO2.DEFAULT_PRIOR_BOXES);
+//
+//        ctx.setLineWidth(3);
+//        ctx.setTextAlign(TextAlignment.LEFT);
+//
+//        long start = System.nanoTime();
+//        for (int i = 0; i < 1; i++) {
+//            INDArray permuted = networkGlobalOutput.permute(0, 3, 1, 2);
+//            INDArray activated = YoloUtils.activate(boundingBoxPriors, permuted);
+//            List<DetectedObject> predictedObjects = YoloUtils.getPredictedObjects(boundingBoxPriors, activated, 0.6, 0.4);
+//
+//            //System.out.println( "width: " + imageWidth );
+//            //System.out.println( "height: " + imageHeight );
+//
+//            for (DetectedObject o : predictedObjects) {
+//                ClassPrediction classPrediction = labels.decodePredictions(o.getClassPredictions(), 1).get(0).get(0);
+//                String label = classPrediction.getLabel();
+//                long x = Math.round(imageWidth  * o.getCenterX() / gridWidth);
+//                long y = Math.round(imageHeight * o.getCenterY() / gridHeight);
+//                long w = Math.round(imageWidth  * o.getWidth()   / gridWidth);
+//                long h = Math.round(imageHeight * o.getHeight()  / gridHeight);
+//
+//                System.out.println("\"" + label + "\" at [" + x + "," + y + ";" + w + "," + h + "], score = "
+//                                + o.getConfidence() * classPrediction.getProbability());
+//
+//                double[] xy1 = o.getTopLeftXY();
+//                double[] xy2 = o.getBottomRightXY();
+//                int x1 = (int) Math.round(imageWidth  * xy1[0] / gridWidth);
+//                int y1 = (int) Math.round(imageHeight * xy1[1] / gridHeight);
+//                int x2 = (int) Math.round(imageWidth  * xy2[0] / gridWidth);
+//                int y2 = (int) Math.round(imageHeight * xy2[1] / gridHeight);
+//
+//                int rectW = x2 - x1;
+//                int rectH = y2 - y1;
+//                //System.out.printf("%s - %d, %d, %d, %d \n", label, x1, x2, y1, y2);
+//                //System.out.println( "color: " + colors.get(label) );
+//                ctx.setStroke(colors.get(label));
+//                ctx.strokeRect(x1, y1, rectW, rectH);
+//
+//                int labelWidth = label.length() * 10;
+//                int labelHeight = 14;
+//
+//                ctx.setFill( colors.get(label) );
+//                ctx.strokeRect(x1, y1-labelHeight, labelWidth, labelHeight);
+//                ctx.fillRect(x1, y1 - labelHeight, labelWidth, labelHeight);
+//                ctx.setFill( Color.WHITE );
+//                ctx.fillText(label, x1 + 3, y1 - 3 );
+//
+//            }
+//
+//        }
+//
+//        globalEndTime = System.nanoTime();
+//        long end = System.nanoTime();
+//        System.out.println("Rendering code took: " + (end - start) / 1000000 + " ms");
+//
+//        System.out.println("Overall Program Time: " + (globalEndTime - globalStartTime) / 1000000 + " ms");
+//
+//    }
+
     private void renderJavaFXStyle(GraphicsContext ctx) throws Exception {
 
         INDArray boundingBoxPriors = Nd4j.create(YOLO2.DEFAULT_PRIOR_BOXES);
@@ -347,49 +458,26 @@ public class YOLO2_TF_Client extends Application {
         ctx.setTextAlign(TextAlignment.LEFT);
 
         long start = System.nanoTime();
-        for (int i = 0; i < 1; i++) {
-            INDArray permuted = networkGlobalOutput.permute(0, 3, 1, 2);
-            INDArray activated = YoloUtils.activate(boundingBoxPriors, permuted);
-            List<DetectedObject> predictedObjects = YoloUtils.getPredictedObjects(boundingBoxPriors, activated, 0.6, 0.4);
-            
-            //System.out.println( "width: " + imageWidth );
-            //System.out.println( "height: " + imageHeight );
 
-            for (DetectedObject o : predictedObjects) {
-                ClassPrediction classPrediction = labels.decodePredictions(o.getClassPredictions(), 1).get(0).get(0);
-                String label = classPrediction.getLabel();
-                long x = Math.round(imageWidth  * o.getCenterX() / gridWidth);
-                long y = Math.round(imageHeight * o.getCenterY() / gridHeight);
-                long w = Math.round(imageWidth  * o.getWidth()   / gridWidth);
-                long h = Math.round(imageHeight * o.getHeight()  / gridHeight);
+        for (io.skymind.skil.service.model.DetectedObject o : detectionResult.getObjects()) {
+            ClassPrediction classPrediction = new ClassPrediction(o.getPredictedClassNumbers()[0], o.getPredictedClasses()[0], o.getConfidences()[0]);
+            String label = classPrediction.getLabel();
+            double[] xy1 = getTopLeftXY(o);
 
-                System.out.println("\"" + label + "\" at [" + x + "," + y + ";" + w + "," + h + "], score = "
-                                + o.getConfidence() * classPrediction.getProbability());
+            System.out.println("\"" + label + "\" at [" + xy1[0] + "," + xy1[1] + ";" + o.getWidth() + "," + o.getHeight() + "], score = "
+                    +  classPrediction.getProbability());
 
-                double[] xy1 = o.getTopLeftXY();
-                double[] xy2 = o.getBottomRightXY();
-                int x1 = (int) Math.round(imageWidth  * xy1[0] / gridWidth);
-                int y1 = (int) Math.round(imageHeight * xy1[1] / gridHeight);
-                int x2 = (int) Math.round(imageWidth  * xy2[0] / gridWidth);
-                int y2 = (int) Math.round(imageHeight * xy2[1] / gridHeight);
+            ctx.setStroke(colors.get(label));
+            ctx.strokeRect(xy1[0], xy1[1], o.getWidth(), o.getHeight());
 
-                int rectW = x2 - x1;
-                int rectH = y2 - y1;
-                //System.out.printf("%s - %d, %d, %d, %d \n", label, x1, x2, y1, y2);
-                //System.out.println( "color: " + colors.get(label) );
-                ctx.setStroke(colors.get(label));
-                ctx.strokeRect(x1, y1, rectW, rectH);
-                
-                int labelWidth = label.length() * 10;
-                int labelHeight = 14;
-                
-                ctx.setFill( colors.get(label) );
-                ctx.strokeRect(x1, y1-labelHeight, labelWidth, labelHeight);
-                ctx.fillRect(x1, y1 - labelHeight, labelWidth, labelHeight);
-                ctx.setFill( Color.WHITE );
-                ctx.fillText(label, x1 + 3, y1 - 3 );
+            int labelWidth = label.length() * 10;
+            int labelHeight = 14;
 
-            }
+            ctx.setFill( colors.get(label) );
+            ctx.strokeRect(xy1[0], xy1[1]-labelHeight, labelWidth, labelHeight);
+            ctx.fillRect(xy1[0], xy1[1] - labelHeight, labelWidth, labelHeight);
+            ctx.setFill( Color.WHITE );
+            ctx.fillText(label, xy1[0] + 3, xy1[1] - 3 );
 
         }
 
@@ -399,6 +487,10 @@ public class YOLO2_TF_Client extends Application {
 
         System.out.println("Overall Program Time: " + (globalEndTime - globalStartTime) / 1000000 + " ms");
 
+    }
+
+    public double[] getTopLeftXY(io.skymind.skil.service.model.DetectedObject o) {
+        return new double[]{o.getCenterX() - o.getWidth() / 2.0D, o.getCenterY() - o.getHeight() / 2.0D};
     }
 
     /**

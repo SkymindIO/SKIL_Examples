@@ -19,10 +19,10 @@
         <spark.version>1</spark.version>
         <nd4j.gpu.backend>nd4j-cuda-8.0</nd4j.gpu.backend>
         <nd4j.cpu.backend>nd4j-native</nd4j.cpu.backend>
-        <nd4j.version>1.0.0-beta</nd4j.version>
-        <datavec.version>1.0.0-beta</datavec.version>
-        <dl4j.version>1.0.0-beta</dl4j.version>
-        <dl4j.spark.version>1.0.0-beta_spark_${spark.version}</dl4j.spark.version>
+        <nd4j.version>1.0.0-beta3</nd4j.version>
+        <datavec.version>1.0.0-beta3</datavec.version>
+        <dl4j.version>1.0.0-beta3</dl4j.version>
+        <dl4j.spark.version>1.0.0-beta3_spark_${spark.version}</dl4j.spark.version>
         <mapdb.version>3.0.2</mapdb.version>
         <slf4j.version>1.7.12</slf4j.version>
         <junit.version>4.12</junit.version>
@@ -79,6 +79,11 @@
             <groupId>org.nd4j</groupId>
             <artifactId>nd4j-native</artifactId>
             <version>${nd4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ai.skymind</groupId>
+            <artifactId>skil-apis</artifactId>
+            <version>1.2.0-RC3</version>
         </dependency>
 
 

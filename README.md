@@ -30,5 +30,5 @@ All notebooks found in the `notebook` folder of this repository contain Zeppelin
 - [Keras model deployment](https://github.com/SkymindIO/SKIL_Examples/blob/master/notebooks/python_keras_tf_mnist.json): Deploy a simple Keras model from the SKIL UI. (_Python_)
 - [TensorFlow model deployment](https://github.com/SkymindIO/SKIL_Examples/blob/master/notebooks/python_tf_mnist.json): Deploy a TensorFlow model with SKIL. (_Python_)
 - [Deploying a KNN model](https://github.com/SkymindIO/SKIL_Examples/blob/master/notebooks/scala_knn_smile_test.json): An example showing you how to deploy a K-nearest-neighbor model with SKIL. (_Scala_)
-- [Running a Spark training job with SKIL]((https://github.com/SkymindIO/SKIL_Examples/blob/master/notebooks/spark_example.json): This notebook shows you how to scale-out your DL4J deep learning model on Apache Spark. (_Scala_)
+- [Running a Spark training job with SKIL](https://github.com/SkymindIO/SKIL_Examples/blob/master/notebooks/spark_example.json): This notebook shows you how to scale-out your DL4J deep learning model on Apache Spark. (_Scala_)
 - [UCI sequence classification example](https://github.com/SkymindIO/SKIL_Examples/blob/master/notebooks/uci_quickstart_notebook.json): The notebook corresponding to the above listed sequence classification example. (_Scala_)

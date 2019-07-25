@@ -20,7 +20,7 @@ You'll find more about the specific requirements of each application in the resp
 - [Salesforce app](https://github.com/SkymindIO/SKIL_Examples/tree/master/Salesforce-app): Salesforce SKIL application
 - [Sequence classification app](https://github.com/SkymindIO/SKIL_Examples/tree/master/UCI-sequence-classification): This application shows you a detailed example of a sequence classification problem on synthetic control chart time series. (_Java_)
 - [Object detection app](https://github.com/SkymindIO/SKIL_Examples/tree/master/YOLO-object-detection-app): In this application you'll learn how the _You only look once_ (YOLO) model can be used for real-time object detection within SKIL. (_Java_)
-
+- [Resume Classification](https://github.com/SkymindIO/SKIL_Examples/tree/master/Resume-Classifier): Reference notebooks used for resume classification (small dataset, so accuracy metric is low).  (_Python & Scala_)
 ## Notebooks
 
 All notebooks found in the `notebook` folder of this repository contain Zeppelin notebooks in JSON format that can be [imported into any SKIL experiment](https://docs.skymind.ai/docs/conducting-experiments).

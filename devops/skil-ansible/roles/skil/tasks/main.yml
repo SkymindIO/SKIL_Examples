@@ -1,0 +1,40 @@
+---
+# Install a SKIL instance and configure it
+
+- name: Adding the SKIL repository configuration
+  copy:
+    src: skymind.repo
+    dest: /etc/yum.repos.d/skymind.repo
+  become: yes
+
+- name: Installing the SKIL distro
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+  - skil-server
+  - skil-server-miniconda
+  - skil-server-spark
+  become: yes
+
+- name: Configuring SKIL variables
+  template:
+    src: skil-env.sh.j2
+    dest: /etc/skil/skil-env.sh
+  become: yes
+
+- name: Enable the daemon for SKIL
+  systemd:
+    name: skil
+    daemon_reload: yes
+    enabled: yes
+    masked: no
+  ignore_errors: yes
+  become: yes
+
+- name: Starting the SKIL service
+  service:
+    name: skil
+    state: started
+    enabled: yes
+  become: yes

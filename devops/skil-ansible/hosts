@@ -1,0 +1,23 @@
+# List of servers for SKIL, Zookeeper and MySQL
+
+# List of MySQL servers
+[mysql_servers]
+server1
+#server2
+#server3
+#server4
+
+# List of Zookeeper servers
+[zookeeper_servers]
+server1
+#server2
+#server3
+#server4
+
+# List of SKIL servers
+[skil_servers]
+server1
+#server2
+#server3
+#server4
+

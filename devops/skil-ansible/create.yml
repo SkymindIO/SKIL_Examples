@@ -1,0 +1,17 @@
+---
+# This playbook would deploy a SKIL cluster, serving a single model and multiple zeppelin servers
+
+## MySQL setup role
+#- hosts: mysql_servers
+#  roles:
+#  - role: mysql
+#
+## Zookeeper setup roles
+#- hosts: zookeeper_servers
+#  roles:
+#  - role: zookeeper
+
+# SKIL setup role
+- hosts: skil_servers
+  roles:
+  - role: skil
